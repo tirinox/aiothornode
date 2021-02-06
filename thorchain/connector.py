@@ -8,7 +8,7 @@ from aiohttp import ClientSession
 
 from .consensus import consensus_response
 from .nodeclient import ThorNodeClient
-from .types import ThorEnvironment, ThorNodeAccount, ThorException, ThorQueue, ThorPool, ThorLastBlock
+from .types import ThorEnvironment, ThorNodeAccount, ThorException, ThorQueue, ThorPool, ThorLastBlock, ThorConstants
 import time
 
 
@@ -88,7 +88,7 @@ class ThorConnector:
     async def query_node_accounts(self, clients=None):
         clients = clients or (await self._get_random_clients())
         data = await self._request(self.env.path_nodes, clients)
-        return [ThorNodeAccount.from_json(j) for j in data]
+        return [ThorNodeAccount.from_json(j) for j in data] if data else []
 
     async def query_queue(self, clients=None):
         clients = clients or (await self._get_random_clients())
@@ -104,11 +104,24 @@ class ThorConnector:
         data = await self._request(path, clients)
         return [ThorPool.from_json(j) for j in data]
 
+    async def query_pool(self, pool: str, height=None, *, clients=None):
+        clients = clients or (await self._get_random_clients())
+        if height:
+            path = self.env.path_pool_height.format(pool=pool, height=height)
+        else:
+            path = self.env.path_pool.format(pool=pool)
+        data = await self._request(path, clients)
+        return ThorPool.from_json(data)
+
     async def query_last_blocks(self, clients=None):
         clients = clients or (await self._get_random_clients())
         data = await self._request(self.env.path_last_blocks, clients=clients)
         return [ThorLastBlock.from_json(j) for j in data] if isinstance(data, list) else [ThorLastBlock.from_json(data)]
 
+    async def query_constants(self, clients=None):
+        clients = clients or (await self._get_random_clients())
+        data = await self._request(self.env.path_constants, clients=clients)
+        return ThorConstants.from_json(data)
 
 # https://gitlab.com/thorchain/thornode/-/blob/master/x/thorchain/query/query.go
 # /observe_chains new path

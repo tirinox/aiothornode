@@ -132,6 +132,32 @@ class ThorPool:
 
 
 @dataclass
+class ThorConstants:
+    constants: dict = field(default_factory=dict)
+    data_types: dict = field(default_factory=dict)
+
+    DATA_TYPES = ('int_64_values', 'bool_values', 'string_values')
+
+    @classmethod
+    def from_json(cls, j):
+        holder = cls()
+        for dt in cls.DATA_TYPES:
+            subset = j.get(dt, {})
+            holder.data_types[dt] = {}
+            for k, v in subset.items():
+                holder.constants[k] = v
+                holder.data_types[dt][k] = v
+
+        return holder
+
+    def get(self, name, default=None):
+        return self.constants.get(name, default)
+
+    def __getitem__(self, item):
+        return self.constants[item]
+
+
+@dataclass
 class ThorEnvironment:
     seed_url: str = ''
     midgard_url: str = ''
@@ -144,8 +170,11 @@ class ThorEnvironment:
     path_nodes: str = '/thorchain/nodes'
     path_pools: str = "/thorchain/pools"
     path_pools_height: str = "/thorchain/pools?height={height}"
-    path_pool_height: str = "/thorchain/pool{asset}?height={height}"
+    path_pool: str = "/thorchain/pool/{pool}"
+    path_pool_height: str = "/thorchain/pool/{pool}?height={height}"
+
     path_last_blocks: str = "/thorchain/lastblock"
+    path_constants: str = "/thorchain/constants"
 
 
 CHAOS_NET_BNB_ENVIRONMENT = ThorEnvironment(seed_url='https://chaosnet-seed.thorchain.info/',
