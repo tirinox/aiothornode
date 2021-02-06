@@ -1,7 +1,7 @@
 import aiohttp
 import pytest
 from thorchain.connector import ThorConnector
-from thorchain.types import TEST_NET_ENVIRONMENT_MULTI_1, CHAOS_NET_ENVIRONMENT
+from thorchain.types import TEST_NET_ENVIRONMENT_MULTI_1, CHAOS_NET_BNB_ENVIRONMENT
 
 
 @pytest.fixture()
@@ -13,15 +13,19 @@ async def session():
 
 @pytest.fixture()
 async def testnet_connector(session):
-    return ThorConnector(TEST_NET_ENVIRONMENT_MULTI_1, session)
+    con = ThorConnector(TEST_NET_ENVIRONMENT_MULTI_1, session)
+    await con.update_nodes()
+    return con
 
 
 @pytest.fixture()
 async def chaosnet_connector(session):
-    return ThorConnector(CHAOS_NET_ENVIRONMENT, session)
+    con = ThorConnector(CHAOS_NET_BNB_ENVIRONMENT, session)
+    await con.update_nodes()
+    return con
 
 
 @pytest.mark.asyncio
-async def test_1(chaosnet_connector: ThorConnector):
-    await chaosnet_connector.update_nodes()
-    print(chaosnet_connector._clients)
+async def test_1(testnet_connector: ThorConnector):
+    await testnet_connector.update_nodes()
+    print(testnet_connector._clients)
