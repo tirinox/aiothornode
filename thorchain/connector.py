@@ -8,7 +8,7 @@ from aiohttp import ClientSession
 
 from .consensus import consensus_response
 from .nodeclient import ThorNodeClient
-from .types import ThorEnvironment, ThorNodeAccount, ThorException
+from .types import ThorEnvironment, ThorNodeAccount, ThorException, ThorQueue, ThorPool
 import time
 
 
@@ -78,12 +78,27 @@ class ThorConnector:
         assert len(self._clients), "No clients!"
         if time.monotonic() - self._last_client_update > self.client_update_period:
             await self.update_nodes()
-        return self._rng.sample(list(self._clients), self.env.consensus_total)
+        if self.env.consensus_total > len(self._clients):
+            return self._clients
+        else:
+            return self._rng.sample(self._clients, self.env.consensus_total)
+
+    # --- METHODS ----
 
     async def query_node_accounts(self, clients=None):
         clients = clients or (await self._get_random_clients())
         data = await self._request(self.env.path_nodes, clients)
         return [ThorNodeAccount.from_json(j) for j in data]
+
+    async def query_queue(self, clients=None):
+        clients = clients or (await self._get_random_clients())
+        data = await self._request(self.env.path_queue, clients)
+        return ThorQueue.from_json(data)
+
+    async def query_pools(self, clients=None):
+        clients = clients or (await self._get_random_clients())
+        data = await self._request(self.env.path_pools, clients)
+        return [ThorPool.from_json(j) for j in data]
 
 # https://gitlab.com/thorchain/thornode/-/blob/master/x/thorchain/query/query.go
 # /observe_chains new path

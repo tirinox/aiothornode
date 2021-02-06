@@ -18,8 +18,16 @@ class ThorException(Exception):
 
 @dataclass
 class ThorQueue:
-    outbound: int = 0
-    swap: int = 0
+    outbound: str = '0'
+    swap: str = '0'
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(**j)
+
+    @property
+    def total(self):
+        return int(self.outbound) + int(self.swap)
 
 
 @dataclass
@@ -70,6 +78,55 @@ class ThorNodeAccount:
 
 
 @dataclass
+class ThorLastBlock:
+    chain: str = ''
+    last_observed_in: int = 0
+    last_observed_out: int = 0
+    thorchain: int = 0
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(**j)
+
+
+@dataclass
+class ThorPool:
+    STATUS_AVAILABLE = 'Available'
+    STATUS_BOOTSTRAP = 'Bootstrap'
+    STATUS_ENABLED = 'Enabled'
+
+    balance_asset: str = '0'
+    balance_rune: str = '0'
+    asset: str = ''
+    pool_units: str = '0'
+    status: str = ''
+
+    @property
+    def balance_asset_int(self):
+        return int(self.balance_asset)
+
+    @property
+    def balance_rune_int(self):
+        return int(self.balance_rune)
+
+    @property
+    def pool_units_int(self):
+        return int(self.pool_units)
+
+    @property
+    def assets_per_rune(self):
+        return self.balance_asset_int / self.balance_rune_int
+
+    @property
+    def runes_per_asset(self):
+        return self.balance_rune_int / self.balance_asset_int
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(**j)
+
+
+@dataclass
 class ThorEnvironment:
     seed_url: str = ''
     midgard_url: str = ''
@@ -80,6 +137,9 @@ class ThorEnvironment:
 
     path_queue: str = '/thorchain/queue'
     path_nodes: str = '/thorchain/nodes'
+    path_pools: str = "/thorchain/pools"
+    path_pools_height: str = "/thorchain/pools?height={height}"
+    path_pool_height: str = "/thorchain/pool{asset}?height={height}"
 
 
 CHAOS_NET_BNB_ENVIRONMENT = ThorEnvironment(seed_url='https://chaosnet-seed.thorchain.info/',
