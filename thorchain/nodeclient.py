@@ -31,3 +31,8 @@ class ThorNodeClient:
     async def request(self, path):
         data = await self.request_raw(path)
         return ujson.loads(data) if data else None
+
+    def __repr__(self) -> str:
+        return f'ThorNodeClient({self.node_ip!r})'
+
+

@@ -6,9 +6,9 @@ from typing import List
 import ujson
 from aiohttp import ClientSession
 
-from consensus import consensus_response
-from nodeclient import ThorNodeClient
-from thorchain.types import ThorEnvironment
+from .consensus import consensus_response
+from .nodeclient import ThorNodeClient
+from .types import ThorEnvironment
 
 
 class ThorConnector:
