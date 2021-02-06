@@ -46,9 +46,9 @@ async def test_queue_chaos(chaosnet_connector: ThorConnector):
     await internal_queue_test(chaosnet_connector)
 
 
-async def internal_pools_test(c: ThorConnector):
-    pools = await c.query_pools()
-    print(pools)
+async def internal_pools_test(c: ThorConnector, height=None):
+    pools = await c.query_pools(height)
+    # print(pools)
     assert pools, "no pools"
     for pool in pools:
         assert pool.asset
@@ -63,8 +63,26 @@ async def internal_pools_test(c: ThorConnector):
 @pytest.mark.asyncio
 async def test_pools_test(testnet_connector: ThorConnector):
     await internal_pools_test(testnet_connector)
+    await internal_pools_test(testnet_connector, height=36001)
 
 
 @pytest.mark.asyncio
 async def test_pools_chaos(chaosnet_connector: ThorConnector):
     await internal_pools_test(chaosnet_connector)
+    await internal_pools_test(chaosnet_connector, height=1000001)
+
+
+async def internal_last_blocks_test(c: ThorConnector):
+    lb = await c.query_last_blocks()
+    print(lb)
+    assert lb
+
+
+@pytest.mark.asyncio
+async def test_last_block_test(testnet_connector: ThorConnector):
+    await internal_last_blocks_test(testnet_connector)
+
+
+@pytest.mark.asyncio
+async def test_last_block_chaos(chaosnet_connector: ThorConnector):
+    await internal_last_blocks_test(chaosnet_connector)

@@ -8,7 +8,7 @@ from aiohttp import ClientSession
 
 from .consensus import consensus_response
 from .nodeclient import ThorNodeClient
-from .types import ThorEnvironment, ThorNodeAccount, ThorException, ThorQueue, ThorPool
+from .types import ThorEnvironment, ThorNodeAccount, ThorException, ThorQueue, ThorPool, ThorLastBlock
 import time
 
 
@@ -95,10 +95,20 @@ class ThorConnector:
         data = await self._request(self.env.path_queue, clients)
         return ThorQueue.from_json(data)
 
-    async def query_pools(self, clients=None):
+    async def query_pools(self, height=None, *, clients=None):
         clients = clients or (await self._get_random_clients())
-        data = await self._request(self.env.path_pools, clients)
+        if height:
+            path = self.env.path_pools_height.format(height=height)
+        else:
+            path = self.env.path_pools
+        data = await self._request(path, clients)
         return [ThorPool.from_json(j) for j in data]
+
+    async def query_last_blocks(self, clients=None):
+        clients = clients or (await self._get_random_clients())
+        data = await self._request(self.env.path_last_blocks, clients=clients)
+        return [ThorLastBlock.from_json(j) for j in data] if isinstance(data, list) else [ThorLastBlock.from_json(data)]
+
 
 # https://gitlab.com/thorchain/thornode/-/blob/master/x/thorchain/query/query.go
 # /observe_chains new path

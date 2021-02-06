@@ -81,12 +81,17 @@ class ThorNodeAccount:
 class ThorLastBlock:
     chain: str = ''
     last_observed_in: int = 0
-    last_observed_out: int = 0
+    last_signed_out: int = 0
     thorchain: int = 0
 
     @classmethod
     def from_json(cls, j):
-        return cls(**j)
+        x = cls()
+        x.chain = j.get('chain', '')
+        x.thorchain = j.get('thorchain', 0)
+        x.last_observed_in = j.get('last_observed_in', 0) if 'last_observed_in' in j else j.get('lastobservedin')
+        x.last_signed_out = j.get('last_signed_out', 0) if 'last_signed_out' in j else j.get('lastsignedout')
+        return x
 
 
 @dataclass
@@ -140,6 +145,7 @@ class ThorEnvironment:
     path_pools: str = "/thorchain/pools"
     path_pools_height: str = "/thorchain/pools?height={height}"
     path_pool_height: str = "/thorchain/pool{asset}?height={height}"
+    path_last_blocks: str = "/thorchain/lastblock"
 
 
 CHAOS_NET_BNB_ENVIRONMENT = ThorEnvironment(seed_url='https://chaosnet-seed.thorchain.info/',
