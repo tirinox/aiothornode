@@ -18,7 +18,7 @@ Supported endpoints:
 
 ## Installation
 
-`pip install https://github.com/tirinox/thorchain`
+`python -m pip install git+https://github.com/tirinox/thorchain`
 
 ## Quick start
 
