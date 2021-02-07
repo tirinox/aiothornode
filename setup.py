@@ -11,11 +11,11 @@ def parse_requirements(filename):
 
 
 setuptools.setup(
-    name='thorchain',
+    name='aiothornode',
     version='0.0.1',
-    description='THORChain library for Python',
+    description='THORChain node connection library for Python',
     long_description=long_description,
-    url='git@github.com:tirinox/thorchain.git',
+    url='git@github.com:tirinox/aiothornode.git',
     author='Maksim Koltsov',
     author_email='delevoper@tirinox.ru',
     license='MIT',

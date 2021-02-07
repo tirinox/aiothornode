@@ -1,5 +1,5 @@
-from thorchain.connector import *
-from thorchain.types import *
+from aiothornode.connector import *
+from aiothornode.types import *
 import asyncio
 import aiohttp
 

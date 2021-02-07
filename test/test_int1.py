@@ -1,4 +1,4 @@
-from thorchain.types import ThorPool
+from aiothornode.types import ThorPool
 from .fixtures import *
 
 

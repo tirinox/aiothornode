@@ -1,4 +1,4 @@
-# thorchain
+# aiothornode
 
 This is a simple Python library to access [THORChain](https://thorchain.org/) nodes.
 It is asynchronous and uses **aiohttp**.
@@ -18,15 +18,15 @@ Supported endpoints:
 
 ## Installation
 
-`python -m pip install git+https://github.com/tirinox/thorchain`
+`python -m pip install git+https://github.com/tirinox/aiothornode`
 
 ## Quick start
 
 The following code is quite self-documenting:
 
 ```
-from thorchain.connector import *
-from thorchain.types import *
+from aiothornode.connector import *
+from aiothornode.types import *
 import asyncio
 import aiohttp
 
