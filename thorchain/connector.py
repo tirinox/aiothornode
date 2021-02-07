@@ -8,7 +8,7 @@ from aiohttp import ClientSession
 
 from .consensus import consensus_response
 from .nodeclient import ThorNodeClient
-from .types import ThorEnvironment, ThorNodeAccount, ThorException, ThorQueue, ThorPool, ThorLastBlock, ThorConstants
+from .types import *
 import time
 
 
@@ -31,18 +31,18 @@ class ThorConnector:
             m = 0
 
         clients = clients[:self.env.consensus_total]  # limit requests!
-        text_responses = await asyncio.gather(*[client.request_raw(path) for client in clients])
-        best_text_response, ratio = consensus_response(text_responses, consensus_n=m, total_n=n)
-        if best_text_response is None:
+        json_responses = await asyncio.gather(*[client.request(path) for client in clients])
+        best_response, ratio = consensus_response(json_responses, consensus_n=m, total_n=n)
+        if best_response is None:
             ips = [client.node_ip for client in clients]
             self.logger.error(f'No consensus reached between nodes: {ips} for request "{path}"!')
             return None
         else:
             self.logger.info(f'Success for the request "{path}" consensus: {(ratio * 100.0):.0f}%')
-            result = ujson.loads(best_text_response)
-            if isinstance(result, dict) and 'code' in result:
-                raise ThorException(result)
-            return result
+            if isinstance(best_response, dict) and 'code' in best_response:
+                raise ThorException(best_response)
+            else:
+                return best_response
 
     async def _load_seed_list(self):
         assert self.session
@@ -75,8 +75,7 @@ class ThorConnector:
         await self._load_active_nodes(seeds)
 
     async def _get_random_clients(self):
-        assert len(self._clients), "No clients!"
-        if time.monotonic() - self._last_client_update > self.client_update_period:
+        if not self._last_client_update or time.monotonic() - self._last_client_update > self.client_update_period:
             await self.update_nodes()
         if self.env.consensus_total > len(self._clients):
             return self._clients
@@ -85,17 +84,22 @@ class ThorConnector:
 
     # --- METHODS ----
 
-    async def query_node_accounts(self, clients=None):
+    async def query_custom_path(self, path, clients=None):
+        clients = clients or (await self._get_random_clients())
+        data = await self._request(path, clients)
+        return data
+
+    async def query_node_accounts(self, clients=None) -> List[ThorNodeAccount]:
         clients = clients or (await self._get_random_clients())
         data = await self._request(self.env.path_nodes, clients)
         return [ThorNodeAccount.from_json(j) for j in data] if data else []
 
-    async def query_queue(self, clients=None):
+    async def query_queue(self, clients=None) -> ThorQueue:
         clients = clients or (await self._get_random_clients())
         data = await self._request(self.env.path_queue, clients)
         return ThorQueue.from_json(data)
 
-    async def query_pools(self, height=None, *, clients=None):
+    async def query_pools(self, height=None, *, clients=None) -> List[ThorPool]:
         clients = clients or (await self._get_random_clients())
         if height:
             path = self.env.path_pools_height.format(height=height)
@@ -104,7 +108,7 @@ class ThorConnector:
         data = await self._request(path, clients)
         return [ThorPool.from_json(j) for j in data]
 
-    async def query_pool(self, pool: str, height=None, *, clients=None):
+    async def query_pool(self, pool: str, height=None, *, clients=None) -> ThorPool:
         clients = clients or (await self._get_random_clients())
         if height:
             path = self.env.path_pool_height.format(pool=pool, height=height)
@@ -113,15 +117,20 @@ class ThorConnector:
         data = await self._request(path, clients)
         return ThorPool.from_json(data)
 
-    async def query_last_blocks(self, clients=None):
+    async def query_last_blocks(self, clients=None) -> List[ThorLastBlock]:
         clients = clients or (await self._get_random_clients())
         data = await self._request(self.env.path_last_blocks, clients=clients)
         return [ThorLastBlock.from_json(j) for j in data] if isinstance(data, list) else [ThorLastBlock.from_json(data)]
 
-    async def query_constants(self, clients=None):
+    async def query_constants(self, clients=None) -> ThorConstants:
         clients = clients or (await self._get_random_clients())
         data = await self._request(self.env.path_constants, clients=clients)
         return ThorConstants.from_json(data)
+
+    async def query_mimir(self, clients=None) -> ThorMimir:
+        clients = clients or (await self._get_random_clients())
+        data = await self._request(self.env.path_mimir, clients=clients)
+        return ThorMimir.from_json(data)
 
 # https://gitlab.com/thorchain/thornode/-/blob/master/x/thorchain/query/query.go
 # /observe_chains new path

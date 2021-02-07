@@ -19,18 +19,15 @@ class ThorNodeClient:
         self.node_ip = node_ip
         self.logger = logger or logging.getLogger('ThorNodeClient')
 
-    async def request_raw(self, path):
+    async def request(self, path):
         url = self.connection_url(self.node_ip, path)
         try:
             async with self.session.get(url, timeout=self.timeout) as resp:
-                return await resp.text()
+                text = await resp.text()
+                return ujson.loads(text)
         except (ClientConnectorError, asyncio.TimeoutError) as e:
             self.logger.warning(f'Cannot connect to THORNode ({self.node_ip}) for "{path}" (err: {e}).')
             return ''
-
-    async def request(self, path):
-        data = await self.request_raw(path)
-        return ujson.loads(data) if data else None
 
     def __repr__(self) -> str:
         return f'ThorNodeClient({self.node_ip!r})'

@@ -158,6 +158,24 @@ class ThorConstants:
 
 
 @dataclass
+class ThorMimir:
+    constants: dict = field(default_factory=dict)
+
+    @classmethod
+    def from_json(cls, j: dict):
+        holder = cls()
+        for k, v in j.items():
+            holder.constants[k] = v
+        return holder
+
+    def get(self, name, default=None):
+        return self.constants.get(name, default)
+
+    def __getitem__(self, item):
+        return self.constants[item]
+
+
+@dataclass
 class ThorEnvironment:
     seed_url: str = ''
     midgard_url: str = ''
@@ -175,6 +193,7 @@ class ThorEnvironment:
 
     path_last_blocks: str = "/thorchain/lastblock"
     path_constants: str = "/thorchain/constants"
+    path_mimir: str = "/thorchain/mimir"
 
 
 CHAOS_NET_BNB_ENVIRONMENT = ThorEnvironment(seed_url='https://chaosnet-seed.thorchain.info/',
