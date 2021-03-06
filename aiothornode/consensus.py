@@ -9,6 +9,9 @@ def hash_response(r):
 
 
 def consensus_response(responses, consensus_n, total_n):
+    if not responses:
+        return None, 0.0
+
     hash_dict = {i: hash_response(r) for i, r in enumerate(responses) if r}
     counter = Counter(hash_dict.values())
     most_hash, most_freq = counter.most_common(1)[0]

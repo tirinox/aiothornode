@@ -61,3 +61,18 @@ async def main():
 if __name__ == '__main__':
     asyncio.run(main())
 ```
+
+## Testing
+
+Install PyTest and an async plugin for it:
+
+```
+pip install pytest
+pip install pytest-asyncio
+```
+
+Then run
+
+```
+pytest test
+```

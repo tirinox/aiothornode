@@ -1,3 +1,4 @@
+from copy import copy
 from dataclasses import dataclass, field
 
 
@@ -194,6 +195,15 @@ class ThorEnvironment:
     path_last_blocks: str = "/thorchain/lastblock"
     path_constants: str = "/thorchain/constants"
     path_mimir: str = "/thorchain/mimir"
+
+    def copy(self):
+        return copy(self)
+
+    def set_consensus(self, minimum, total):
+        assert total >= 1
+        assert 1 <= minimum <= total
+        self.consensus_total = total
+        self.consensus_min = minimum
 
 
 CHAOS_NET_BNB_ENVIRONMENT = ThorEnvironment(seed_url='https://chaosnet-seed.thorchain.info/',

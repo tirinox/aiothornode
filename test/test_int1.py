@@ -1,3 +1,5 @@
+import pytest
+
 from aiothornode.types import ThorPool
 from .fixtures import *
 
