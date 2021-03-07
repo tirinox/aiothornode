@@ -31,5 +31,3 @@ class ThorNodeClient:
 
     def __repr__(self) -> str:
         return f'ThorNodeClient({self.node_ip!r})'
-
-

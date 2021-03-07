@@ -23,7 +23,7 @@ class ThorConnector:
         self._last_client_update = 0.0
 
     async def _request(self, path: str, clients: List[ThorNodeClient]):
-        self.logger.info(f'Start request to Thor node "{path}"')
+        self.logger.debug(f'Start request to Thor node "{path}"')
 
         m, n = self.env.consensus_min, self.env.consensus_total
         if len(clients) < n:
@@ -38,7 +38,7 @@ class ThorConnector:
             self.logger.error(f'No consensus reached between nodes: {ips} for request "{path}"!')
             return None
         else:
-            self.logger.info(f'Success for the request "{path}" consensus: {(ratio * 100.0):.0f}%')
+            self.logger.debug(f'Success for the request "{path}" consensus: {(ratio * 100.0):.0f}%')
             if isinstance(best_response, dict) and 'code' in best_response:
                 raise ThorException(best_response)
             else:
@@ -46,7 +46,7 @@ class ThorConnector:
 
     async def _load_seed_list(self):
         assert self.session
-        self.logger.info(f'Using seed URL: {self.env.seed_url}')
+        self.logger.debug(f'Using seed URL: {self.env.seed_url}')
         async with self.session.get(self.env.seed_url) as resp:
             seed_nodes = await resp.json()
             return seed_nodes
