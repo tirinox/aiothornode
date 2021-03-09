@@ -20,3 +20,9 @@ def consensus_response(responses, consensus_n, total_n):
         return responses[best_index], (most_freq / total_n if total_n else 0.0)
     else:
         return None, 0.0
+
+
+def first_not_null(responses):
+    for r in responses:
+        if r:
+            return r

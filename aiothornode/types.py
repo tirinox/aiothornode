@@ -21,6 +21,7 @@ class ThorException(Exception):
 class ThorQueue:
     outbound: str = '0'
     swap: str = '0'
+    internal: str = '0'
 
     @classmethod
     def from_json(cls, j):
@@ -28,7 +29,7 @@ class ThorQueue:
 
     @property
     def total(self):
-        return int(self.outbound) + int(self.swap)
+        return int(self.outbound) + int(self.swap) + int(self.internal)
 
 
 @dataclass
@@ -106,6 +107,8 @@ class ThorPool:
     asset: str = ''
     pool_units: str = '0'
     status: str = ''
+    synth_units: str = ''
+    decimals: str = '0'
 
     @property
     def balance_asset_int(self):
