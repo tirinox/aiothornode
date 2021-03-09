@@ -12,7 +12,7 @@ def parse_requirements(filename):
 
 setuptools.setup(
     name='aiothornode',
-    version='0.0.3',
+    version='0.0.4',
     description='THORChain node connection library for Python',
     long_description=long_description,
     url='git@github.com:tirinox/aiothornode.git',
