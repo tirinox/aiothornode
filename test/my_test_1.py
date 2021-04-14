@@ -1,7 +1,7 @@
 import aiohttp
 
 from aiothornode.connector import *
-from aiothornode.types import *
+from aiothornode.env import TEST_NET_ENVIRONMENT_MULTI_1
 
 
 async def main():

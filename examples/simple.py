@@ -1,5 +1,5 @@
 from aiothornode.connector import *
-from aiothornode.types import *
+from aiothornode.env import *
 import asyncio
 import aiohttp
 
@@ -9,7 +9,8 @@ def delim():
 
 
 async def main():
-    env = CHAOS_NET_BNB_ENVIRONMENT
+    env = MULTICHAIN_CHAOSNET_ENVIRONMENT.copy()
+    # env = CHAOS_NET_BNB_ENVIRONMENT
     # env = TEST_NET_ENVIRONMENT_MULTI_1  # TestNet
     # env = ThorEnvironment(seed_url='https://my-thor-seed.org')  # custom
 
@@ -21,19 +22,19 @@ async def main():
         delim()
 
         mimir = await connector.query_mimir()
-        mimir_1 = mimir['mimir//EMISSIONCURVE']
-        print(f'Mimir: {mimir}, EMISSIONCURVE = {mimir_1}')
+        mimir_1 = mimir.get('mimir//MINIMUMBONDINRUNE')
+        print(f'Mimir: {mimir}, MINIMUMBONDINRUNE = {mimir_1}')
         delim()
 
         queue = await connector.query_queue()
         print(f'Queue: {queue}')
         delim()
 
-        node_accounts = await connector.query_node_accounts()
+        node_accounts = await connector.query_node_accounts(consensus=False)
         print(f'Example node account: {node_accounts[0]}')
         delim()
 
-        pool = await connector.query_pool('BNB.BNB', height=888123)
+        pool = await connector.query_pool('BNB.BNB', height=1111)
         print(pool)
         delim()
 

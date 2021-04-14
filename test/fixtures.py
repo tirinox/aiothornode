@@ -2,7 +2,7 @@ import aiohttp
 import pytest
 
 from aiothornode.connector import ThorConnector
-from aiothornode.types import TEST_NET_ENVIRONMENT_MULTI_1, CHAOS_NET_BNB_ENVIRONMENT
+from aiothornode.env import CHAOS_NET_BNB_ENVIRONMENT, TEST_NET_ENVIRONMENT_MULTI_1
 
 
 @pytest.fixture()

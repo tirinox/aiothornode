@@ -109,6 +109,9 @@ class ThorPool:
     status: str = ''
     synth_units: str = ''
     decimals: str = '0'
+    error: str = ''
+    pending_inbound_rune: str = '0'
+    pending_inbound_asset: str = '0'
 
     @property
     def balance_asset_int(self):
@@ -207,11 +210,3 @@ class ThorEnvironment:
         assert 1 <= minimum <= total
         self.consensus_total = total
         self.consensus_min = minimum
-
-
-CHAOS_NET_BNB_ENVIRONMENT = ThorEnvironment(seed_url='https://chaosnet-seed.thorchain.info/',
-                                            midgard_url='https://chaosnet-midgard.bepswap.com/',
-                                            path_nodes='/thorchain/nodeaccounts')
-
-TEST_NET_ENVIRONMENT_MULTI_1 = ThorEnvironment(seed_url='https://testnet.seed.thorchain.info',
-                                               midgard_url='https://testnet.midgard.thorchain.info/')

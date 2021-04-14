@@ -1,6 +1,6 @@
 import pytest
 
-from aiothornode.types import CHAOS_NET_BNB_ENVIRONMENT, TEST_NET_ENVIRONMENT_MULTI_1
+from aiothornode.env import CHAOS_NET_BNB_ENVIRONMENT, TEST_NET_ENVIRONMENT_MULTI_1
 
 
 def test_env_copy():
