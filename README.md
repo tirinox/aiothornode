@@ -1,15 +1,18 @@
 # aiothornode
 
-This is a simple Python library to access [THORChain](https://thorchain.org/) nodes.
-It is asynchronous and uses **aiohttp**.
+This is a simple Python library to access [THORChain](https://thorchain.org/) nodes. It is asynchronous and uses **
+aiohttp**.
 
 Features:
+
 * Connecting to a seed service
 * Filter out inactive nodes
-* Simple consensus algorithm (connecting to a random subset of active nodes and sending them the same request and choosing the most frequent answer)
+* Simple consensus algorithm (connecting to a random subset of active nodes and sending them the same request and
+  choosing the most frequent answer)
 * Automatically updates of the list of nodes
 
 Supported endpoints:
+
 * Constants
 * Mimir
 * Nodes (node accounts)
@@ -21,6 +24,7 @@ Supported endpoints:
 `python -m pip install git+https://github.com/tirinox/aiothornode`
 
 ## Quick start
+
 
 The following code is quite self-documenting:
 
