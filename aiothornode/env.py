@@ -8,4 +8,4 @@ TEST_NET_ENVIRONMENT_MULTI_1 = ThorEnvironment(seed_url='https://testnet.seed.th
                                                midgard_url='https://testnet.midgard.thorchain.info/')
 
 MULTICHAIN_CHAOSNET_ENVIRONMENT = ThorEnvironment(seed_url='https://seed.thorchain.info/',
-                                                  midgard_url='https://midgard.thorchain.info/v2/doc/')
+                                                  midgard_url='https://midgard.thorchain.info/')
