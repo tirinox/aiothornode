@@ -28,8 +28,11 @@ def consensus_response(responses, consensus_n, total_n, post_processor=None):
     if not responses:
         return None, 0.0
 
-    hash_dict = {i: hash_response(r, post_processor) for i, r in enumerate(responses) if r}
+    hash_dict = {i: hash_response(r, post_processor) for i, r in enumerate(responses) if r is not None}
     counter = Counter(hash_dict.values())
+    if not counter:
+        return None, 0.0
+
     most_hash, most_freq = counter.most_common(1)[0]
     if most_freq >= consensus_n:
         best_index = next(i for i, this_hash in hash_dict.items() if this_hash == most_hash)

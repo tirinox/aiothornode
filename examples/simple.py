@@ -10,12 +10,18 @@ def delim():
 
 async def main():
     env = MULTICHAIN_CHAOSNET_ENVIRONMENT.copy()
-    # env = CHAOS_NET_BNB_ENVIRONMENT
-    # env = TEST_NET_ENVIRONMENT_MULTI_1  # TestNet
+    # env = CHAOS_NET_BNB_ENVIRONMENT.copy()
+    # env = TEST_NET_ENVIRONMENT_MULTI_1.copy()  # TestNet
     # env = ThorEnvironment(seed_url='https://my-thor-seed.org')  # custom
 
     async with aiohttp.ClientSession() as session:
         connector = ThorConnector(env, session)
+
+        print('Tendermint Block:')
+        tender_block = await connector.query_tendermint_block_raw(10001)
+        block_header = tender_block['result']['block']['header']
+        print(f'{block_header["height"] = } and {block_header["time"] = }')
+        delim()
 
         constants = await connector.query_constants()
         print(f'Constants: {constants}')

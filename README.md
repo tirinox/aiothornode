@@ -1,7 +1,6 @@
 # aiothornode
 
-This is a simple Python library to access [THORChain](https://thorchain.org/) nodes. It is asynchronous and uses **
-aiohttp**.
+This is a simple Python library to access [THORChain](https://thorchain.org/) nodes. It is asynchronous and uses _aiohttp_.
 
 Features:
 
@@ -10,6 +9,7 @@ Features:
 * Simple consensus algorithm (connecting to a random subset of active nodes and sending them the same request and
   choosing the most frequent answer)
 * Automatically updates of the list of nodes
+* Automatic ban-list for bad nodes
 
 Supported endpoints:
 
@@ -18,6 +18,7 @@ Supported endpoints:
 * Nodes (node accounts)
 * Current TX queue length
 * Pools (current and at arbitrary height)
+* Tendermint block at height
 
 ## Installation
 
@@ -41,6 +42,10 @@ async def main():
     
     async with aiohttp.ClientSession() as session:
         connector = ThorConnector(env, session)
+        
+        tender_block = await connector.query_tendermint_block_raw(10001)
+        block_header = tender_block['result']['block']['header']
+        print(f'{block_header["height"] = } and {block_header["time"] = }')
 
         constants = await connector.query_constants()
         print(f'Constants: {constants}')

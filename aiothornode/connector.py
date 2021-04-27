@@ -24,8 +24,10 @@ class ThorConnector:
         self._last_client_update = 0.0
         self.use_all_nodes_when_updating = True
         self.auto_ban = auto_ban
+        self.ban_list = set()
 
-    async def _request(self, path: str, clients: List[ThorNodeClient], consensus=True, post_processor=None):
+    async def _request(self, path: str, clients: List[ThorNodeClient], consensus=True, post_processor=None,
+                       is_rpc=False):
         self.logger.debug(f'Start request to Thor node "{path}"')
 
         m, n = self.env.consensus_min, self.env.consensus_total
@@ -34,7 +36,14 @@ class ThorConnector:
             m = 0
 
         # clients = clients[:self.env.consensus_total]  # limit requests!
-        json_responses = await asyncio.gather(*[client.request(path) for client in clients])
+        json_responses = await asyncio.gather(*[client.request(path, is_rpc=is_rpc) for client in clients])
+
+        bad_clients = [client.node_ip for client, json_response in zip(clients, json_responses) if
+                       json_response is None]
+        if self.auto_ban and bad_clients:
+            self.logger.info(f'Banning clients: {bad_clients}.')
+            self.ban_list.update(set(bad_clients))
+
         if consensus:
             best_response, ratio = consensus_response(json_responses, consensus_n=m, total_n=n,
                                                       post_processor=post_processor)
@@ -87,6 +96,9 @@ class ThorConnector:
         seeds = await self._load_seed_list()
         await self._load_active_nodes(seeds)
 
+    def client_list_except_banned(self):
+        return [c for c in self._clients if c.node_ip not in self.ban_list]
+
     async def _get_random_clients(self):
         if not self._last_client_update or time.monotonic() - self._last_client_update > self.client_update_period:
             await self.update_nodes()
@@ -94,7 +106,13 @@ class ThorConnector:
         if self.env.consensus_total > len(self._clients):
             return self._clients
         else:
-            return self._rng.sample(self._clients, self.env.consensus_total)
+            clients = self.client_list_except_banned() if self.auto_ban else self._clients
+            if len(clients) < self.env.consensus_total:
+                self.logger.info('Opps! Banned to many clients! Unban them all!')
+                self.ban_list = set()
+                clients = self._clients
+
+            return self._rng.sample(clients, self.env.consensus_total)
 
     # --- METHODS ----
 
@@ -147,6 +165,11 @@ class ThorConnector:
         data = await self._request(self.env.path_mimir, clients=clients, consensus=consensus)
         return ThorMimir.from_json(data)
 
+    async def query_tendermint_block_raw(self, height, clients=None, consensus=True):
+        clients = clients or (await self._get_random_clients())
+        data = await self._request(f'/block?height={height}', clients, consensus=consensus, is_rpc=True)
+        return data
+
     # --- POST PROCESSORS ----
 
     @staticmethod
@@ -156,6 +179,3 @@ class ThorConnector:
 
         r = list(sorted(result, key=itemgetter('node_address')))
         return r
-
-# https://gitlab.com/thorchain/thornode/-/blob/master/x/thorchain/query/query.go
-# /observe_chains new path
