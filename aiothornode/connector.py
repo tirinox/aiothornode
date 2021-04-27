@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from operator import itemgetter
 from random import Random
 from typing import List
 
@@ -12,7 +13,8 @@ from .types import *
 
 
 class ThorConnector:
-    def __init__(self, env: ThorEnvironment, session: ClientSession, logger=None, rng: Random = None):
+    def __init__(self, env: ThorEnvironment, session: ClientSession, logger=None, rng: Random = None,
+                 auto_ban=False):
         self.session = session
         self.env = env
         self.logger = logger or logging.getLogger('ThorConnector')
@@ -21,8 +23,9 @@ class ThorConnector:
         self.client_update_period = 120  # sec
         self._last_client_update = 0.0
         self.use_all_nodes_when_updating = True
+        self.auto_ban = auto_ban
 
-    async def _request(self, path: str, clients: List[ThorNodeClient], consensus=True):
+    async def _request(self, path: str, clients: List[ThorNodeClient], consensus=True, post_processor=None):
         self.logger.debug(f'Start request to Thor node "{path}"')
 
         m, n = self.env.consensus_min, self.env.consensus_total
@@ -33,7 +36,8 @@ class ThorConnector:
         # clients = clients[:self.env.consensus_total]  # limit requests!
         json_responses = await asyncio.gather(*[client.request(path) for client in clients])
         if consensus:
-            best_response, ratio = consensus_response(json_responses, consensus_n=m, total_n=n)
+            best_response, ratio = consensus_response(json_responses, consensus_n=m, total_n=n,
+                                                      post_processor=post_processor)
         else:
             best_response, ratio = first_not_null(json_responses), 1.0
 
@@ -101,7 +105,8 @@ class ThorConnector:
 
     async def query_node_accounts(self, clients=None, consensus=True) -> List[ThorNodeAccount]:
         clients = clients or (await self._get_random_clients())
-        data = await self._request(self.env.path_nodes, clients, consensus=consensus)
+        data = await self._request(self.env.path_nodes, clients, consensus=consensus,
+                                   post_processor=self.post_processor_for_pools)
         return [ThorNodeAccount.from_json(j) for j in data] if data else []
 
     async def query_queue(self, clients=None, consensus=True) -> ThorQueue:
@@ -141,6 +146,16 @@ class ThorConnector:
         clients = clients or (await self._get_random_clients())
         data = await self._request(self.env.path_mimir, clients=clients, consensus=consensus)
         return ThorMimir.from_json(data)
+
+    # --- POST PROCESSORS ----
+
+    @staticmethod
+    def post_processor_for_pools(result):
+        if not result:
+            return result
+
+        r = list(sorted(result, key=itemgetter('node_address')))
+        return r
 
 # https://gitlab.com/thorchain/thornode/-/blob/master/x/thorchain/query/query.go
 # /observe_chains new path
