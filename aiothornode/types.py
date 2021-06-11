@@ -135,7 +135,18 @@ class ThorPool:
 
     @classmethod
     def from_json(cls, j):
-        return cls(**j)
+        return cls(
+            balance_asset=j.get('balance_asset', '0'),
+            balance_rune=j.get('balance_rune', '0'),
+            asset=j.get('asset', ''),
+            pool_units=j.get('LP_units', '0') if 'LP_units' in j else j.get('pool_units', '0'),
+            status=j.get('status', cls.STATUS_BOOTSTRAP),
+            synth_units=j.get('synth_units', '0'),
+            decimals=j.get('decimals', '0'),
+            error=j.get('error', ''),
+            pending_inbound_rune=j.get('pending_inbound_rune', '0'),
+            pending_inbound_asset=j.get('pending_inbound_asset', '0'),
+        )
 
 
 @dataclass

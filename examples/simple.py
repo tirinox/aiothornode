@@ -40,7 +40,7 @@ async def main():
         print(f'Example node account: {node_accounts[0]}')
         delim()
 
-        pool = await connector.query_pool('BNB.BNB', height=1111)
+        pool = await connector.query_pool('BNB.BUSD-BD1', height=71111)
         print(pool)
         delim()
 
