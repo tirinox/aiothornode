@@ -212,6 +212,7 @@ class ThorEnvironment:
     path_last_blocks: str = "/thorchain/lastblock"
     path_constants: str = "/thorchain/constants"
     path_mimir: str = "/thorchain/mimir"
+    path_inbound_addresses: str = "/thorchain/inbound_addresses"
 
     def copy(self):
         return copy(self)
@@ -221,3 +222,28 @@ class ThorEnvironment:
         assert 1 <= minimum <= total
         self.consensus_total = total
         self.consensus_min = minimum
+
+
+@dataclass
+class ThorChainInfo:
+    chain: str = ''
+    pub_key: str = ''
+    address: str = ''
+    router: str = ''  # for smart-contract based chains
+    halted: bool = False
+    gas_rate: int = 0
+
+    @property
+    def is_ok(self):
+        return self.chain and self.pub_key and self.address
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(
+            chain=j.get('chain', ''),
+            pub_key=j.get('pub_key', ''),
+            address=j.get('address', ''),
+            router=j.get('router', ''),
+            halted=bool(j.get('halted', True)),
+            gas_rate=int(j.get('gas_rate', 0)),
+        )

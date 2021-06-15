@@ -17,6 +17,11 @@ async def main():
     async with aiohttp.ClientSession() as session:
         connector = ThorConnector(env, session)
 
+        chains = await connector.query_chain_info()
+        chains = list(chains.values())
+        print('Chain info:', chains)
+        delim()
+
         print('Tendermint Block:')
         tender_block = await connector.query_tendermint_block_raw(10001)
         block_header = tender_block['result']['block']['header']
