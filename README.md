@@ -20,6 +20,7 @@ Supported endpoints:
 * Pools (current and at arbitrary height)
 * Tendermint block at height
 * Inbound addresses and other chain info
+* Asgard & Yggdrasil vaults (new!)
 
 ## Installation
 

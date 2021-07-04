@@ -1,5 +1,6 @@
 from copy import copy
 from dataclasses import dataclass, field
+from typing import List
 
 
 class ThorException(Exception):
@@ -213,6 +214,8 @@ class ThorEnvironment:
     path_constants: str = "/thorchain/constants"
     path_mimir: str = "/thorchain/mimir"
     path_inbound_addresses: str = "/thorchain/inbound_addresses"
+    path_vault_yggdrasil: str = "/thorchain/vaults/yggdrasil"
+    path_vault_asgard: str = "/thorchain/vaults/asgard"
 
     def copy(self):
         return copy(self)
@@ -246,4 +249,90 @@ class ThorChainInfo:
             router=j.get('router', ''),
             halted=bool(j.get('halted', True)),
             gas_rate=int(j.get('gas_rate', 0)),
+        )
+
+
+@dataclass
+class ThorCoin:
+    asset: str = ''
+    amount: int = 0
+    decimals: int = 18
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(
+            asset=j.get('asset'),
+            amount=int(j.get('amount', 0)),
+            decimals=int(j.get('decimals', 18))
+        )
+
+
+@dataclass
+class ThorRouter:
+    chain: str = ''
+    router: str = ''
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(
+            chain=j.get('chain', ''),
+            router=j.get('router', '')
+        )
+
+
+@dataclass
+class ThorAddress:
+    chain: str = ''
+    address: str = ''
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(
+            chain=j.get('chain', ''),
+            address=j.get('address', '')
+        )
+
+
+@dataclass
+class ThorVault:
+    block_height: int = 0
+    pub_key: str = ''
+    coins: List[ThorCoin] = field(default_factory=list)
+    type: str = ''
+    status: str = ''
+    status_since: int = 0
+    membership: List[str] = field(default_factory=list)
+    chains: List[str] = field(default_factory=list)
+    inbound_tx_count: int = 0
+    outbound_tx_count: int = 0
+    routers: List[ThorRouter] = field(default_factory=list)
+    addresses: List[ThorAddress] = field(default_factory=list)
+
+    TYPE_YGGDRASIL = 'YggdrasilVault'
+    TYPE_ASGARD = 'AsgardVault'
+
+    STATUS_ACTIVE = "Active"
+    STATUS_ACTIVE_VAULT = "ActiveVault"
+    STATUS_STANDBY = "Standby"
+    STATUS_RETIRING = "RetiringVault"
+
+    @property
+    def is_active(self):
+        return self.status in (self.STATUS_ACTIVE, self.STATUS_ACTIVE_VAULT)
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(
+            block_height=int(j.get('block_height', 0)),
+            pub_key=j.get('pub_key', ''),
+            coins=[ThorCoin.from_json(coin) for coin in j.get('coins', [])],
+            type=j.get('type', ''),
+            status=j.get('status', ''),
+            status_since=int(j.get('status_since', 0)),
+            membership=j.get('membership', []),
+            chains=j.get('chains', []),
+            inbound_tx_count=int(j.get('inbound_tx_count', 0)),
+            outbound_tx_count=int(j.get('outbound_tx_count', 0)),
+            routers=[ThorRouter.from_json(r) for r in j.get('routers', [])],
+            addresses=[ThorAddress.from_json(a) for a in j.get('addresses', [])],
         )

@@ -186,6 +186,12 @@ class ThorConnector:
             info_list = [ThorChainInfo.from_json(j) for j in current]
         return {info.chain: info for info in info_list}
 
+    async def query_vault(self, vault_type=ThorVault.TYPE_ASGARD, clients=None, consensus=True) -> List[ThorVault]:
+        clients = clients or (await self.get_random_clients())
+        path = self.env.path_vault_asgard if vault_type == ThorVault.TYPE_ASGARD else self.env.path_vault_yggdrasil
+        data = await self._request(path, clients, consensus=consensus)
+        return [ThorVault.from_json(v) for v in data]
+
     # --- POST PROCESSORS ----
 
     @staticmethod
