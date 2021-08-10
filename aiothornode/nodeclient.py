@@ -32,7 +32,7 @@ class ThorNodeClient:
             async with self.session.get(url, timeout=self.timeout) as resp:
                 text = await resp.text()
                 return ujson.loads(text)
-        except (ClientConnectorError, asyncio.TimeoutError) as e:
+        except (ClientConnectorError, asyncio.TimeoutError, ValueError) as e:
             self.logger.warning(f'Cannot connect to THORNode ({self.node_ip}) for "{path}" (err: {e}).')
             return None
 

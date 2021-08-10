@@ -18,7 +18,7 @@ with open('README.md', 'r') as f:
 
 setuptools.setup(
     name='aiothornode',
-    version='0.0.17',
+    version='0.0.18',
     description='THORChain node connection library for Python',
     long_description=long_description,
     long_description_content_type='text/markdown',
