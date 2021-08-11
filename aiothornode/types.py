@@ -2,6 +2,8 @@ from copy import copy
 from dataclasses import dataclass, field
 from typing import List
 
+THOR_BASE_MULT = 10 ** 8
+
 
 class ThorException(Exception):
     def __init__(self, j, *args) -> None:
@@ -216,6 +218,7 @@ class ThorEnvironment:
     path_inbound_addresses: str = "/thorchain/inbound_addresses"
     path_vault_yggdrasil: str = "/thorchain/vaults/yggdrasil"
     path_vault_asgard: str = "/thorchain/vaults/asgard"
+    path_balance: str = '/bank/balances/{address}'
 
     def copy(self):
         return copy(self)
@@ -335,4 +338,51 @@ class ThorVault:
             outbound_tx_count=int(j.get('outbound_tx_count', 0)),
             routers=[ThorRouter.from_json(r) for r in j.get('routers', [])],
             addresses=[ThorAddress.from_json(a) for a in j.get('addresses', [])],
+        )
+
+
+@dataclass
+class ThorBalance:
+    amount: int
+    denom: str
+
+    @property
+    def amount_float(self):
+        return self.amount / THOR_BASE_MULT
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(
+            amount=int(j.get('amount', 0)),
+            denom=j.get('denom', '')
+        )
+
+
+@dataclass
+class ThorBalances:
+    RUNE = 'rune'
+
+    height: int
+    assets: List[ThorBalance]
+    address: str
+
+    @property
+    def runes(self):
+        for asset in self.assets:
+            if asset.denom == self.RUNE:
+                return asset.amount
+        return 0
+
+    @property
+    def runes_float(self):
+        return self.runes / THOR_BASE_MULT
+
+    @classmethod
+    def from_json(cls, j, address):
+        return cls(
+            height=int(j.get('height', 0)),
+            assets=[
+                ThorBalance.from_json(item) for item in j.get('result')
+            ],
+            address=address
         )

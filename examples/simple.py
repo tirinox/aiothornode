@@ -10,7 +10,6 @@ def delim():
 
 async def main():
     env = MULTICHAIN_CHAOSNET_ENVIRONMENT.copy()
-    # env = CHAOS_NET_BNB_ENVIRONMENT.copy()
     # env = TEST_NET_ENVIRONMENT_MULTI_1.copy()  # TestNet
     # env = ThorEnvironment(seed_url='https://my-thor-seed.org')  # custom
 
@@ -52,6 +51,10 @@ async def main():
         pools = await connector.query_pools()
         print(pools[0])
         print(f'Total {len(pools)} pools')
+        delim()
+
+        bank = await connector.query_balance('thor1q9vhc5zz8f097eyx7la4m35wsn7u3vds6sv9kg')
+        print(f'Balance of {bank.address} is {bank.runes_float} Rune')
         delim()
 
 

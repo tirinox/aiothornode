@@ -21,6 +21,7 @@ Supported endpoints:
 * Tendermint block at height
 * Inbound addresses and other chain info
 * Asgard & Yggdrasil vaults (new!)
+* Balance of THOR account
 
 ## Installation
 
@@ -72,6 +73,9 @@ async def main():
         pools = await connector.query_pools()
         print(pools[0])
         print(f'Total {len(pools)} pools')
+        
+        bank = await connector.query_balance('thor1q9vhc5zz8f097eyx7la4m35wsn7u3vds6sv9kg')
+        print(f'Balance of {bank.address} is {bank.runes_float} Rune')
 
 if __name__ == '__main__':
     asyncio.run(main())

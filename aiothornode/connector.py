@@ -192,6 +192,12 @@ class ThorConnector:
         data = await self._request(path, clients, consensus=consensus)
         return [ThorVault.from_json(v) for v in data]
 
+    async def query_balance(self, address: str, clients=None, consensus=True) -> ThorBalances:
+        clients = clients or (await self.get_random_clients())
+        path = self.env.path_balance.format(address=address)
+        data = await self._request(path, clients, consensus=consensus)
+        return ThorBalances.from_json(data, address)
+
     # --- POST PROCESSORS ----
 
     @staticmethod
