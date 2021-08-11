@@ -8,6 +8,7 @@ from typing import Dict
 from aiohttp import ClientSession
 
 from .consensus import consensus_response, first_not_null
+from .env import ThorEnvironment
 from .nodeclient import ThorNodeClient
 from .types import *
 
@@ -199,9 +200,19 @@ class ThorConnector:
         data = await self._request(path, clients, consensus=consensus, is_rpc=True)
         return data
 
-    async def query_block(self, height=0, clients=None, consensus=True) -> ThorBalances:
+    async def query_block(self, height, clients=None, consensus=True) -> ThorBalances:
         data = await self.query_tendermint_block_raw(height, clients, consensus)
         return ThorBlock.from_json(data)
+
+    async def query_native_tx(self, tx_hash: str, clients=None, consensus=True):
+        tx_hash = str(tx_hash)
+        if not tx_hash.startswith('0x') and not tx_hash.startswith('0X'):
+            tx_hash = f'0x{tx_hash}'
+
+        clients = clients or (await self.get_random_clients())
+        path = self.env.path_tx_by_hash.format(hash=tx_hash)
+        data = await self._request(path, clients, consensus=consensus, is_rpc=True)
+        return ThorNativeTX.from_json(data)
 
     # --- POST PROCESSORS ----
 

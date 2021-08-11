@@ -1,9 +1,12 @@
 import base64
 import datetime
-from copy import copy
+import re
+import typing
 from dataclasses import dataclass, field
 from hashlib import sha256
 from typing import List
+
+import ujson
 from dateutil.parser import parse as date_parser
 
 THOR_BASE_MULT = 10 ** 8
@@ -201,41 +204,6 @@ class ThorMimir:
 
 
 @dataclass
-class ThorEnvironment:
-    seed_url: str = ''
-    midgard_url: str = ''
-
-    timeout: float = 3.0
-    consensus_min: int = 2
-    consensus_total: int = 3
-
-    path_queue: str = '/thorchain/queue'
-    path_nodes: str = '/thorchain/nodes'
-    path_pools: str = "/thorchain/pools"
-    path_pools_height: str = "/thorchain/pools?height={height}"
-    path_pool: str = "/thorchain/pool/{pool}"
-    path_pool_height: str = "/thorchain/pool/{pool}?height={height}"
-
-    path_last_blocks: str = "/thorchain/lastblock"
-    path_constants: str = "/thorchain/constants"
-    path_mimir: str = "/thorchain/mimir"
-    path_inbound_addresses: str = "/thorchain/inbound_addresses"
-    path_vault_yggdrasil: str = "/thorchain/vaults/yggdrasil"
-    path_vault_asgard: str = "/thorchain/vaults/asgard"
-    path_balance: str = '/bank/balances/{address}'
-    path_block_by_height: str = '/block?height={height}'
-
-    def copy(self):
-        return copy(self)
-
-    def set_consensus(self, minimum, total):
-        assert total >= 1
-        assert 1 <= minimum <= total
-        self.consensus_total = total
-        self.consensus_min = minimum
-
-
-@dataclass
 class ThorChainInfo:
     chain: str = ''
     pub_key: str = ''
@@ -418,4 +386,92 @@ class ThorBlock:
             time=time,
             hash=result['block_id']['hash'],
             txs_hashes=txs
+        )
+
+
+class ThorTxAttribute(typing.NamedTuple):
+    key: str
+    value: str
+    index: bool
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(
+            base64.b64decode(j['key']).decode('utf-8'),
+            base64.b64decode(j['value']).decode('utf-8'),
+            bool(j['index'])
+        )
+
+
+class ThorTxEvent(typing.NamedTuple):
+    type: str
+    attributes: List[ThorTxAttribute]
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(
+            type=j['type'],
+            attributes=[ThorTxAttribute.from_json(a) for a in j['attributes']]
+        )
+
+    def value_of(self, key):
+        return next(a.value for a in self.attributes if a.key == key)
+
+    @property
+    def sender(self):
+        return self.value_of('sender')
+
+    @property
+    def recipient(self):
+        return self.value_of('recipient')
+
+    @property
+    def amount(self):
+        amt_str = self.value_of('amount')
+        value, asset = re.findall(r'[A-Za-z]+|\d+', amt_str)
+        return int(value), asset
+
+
+@dataclass
+class ThorNativeTX:
+    hash: str
+    height: int
+    index: int
+    code: int
+    data: str
+    log: List[dict]
+    gas_wanted: int
+    gas_used: int
+    events: List[ThorTxEvent]
+
+    TYPE_SET_MIMIR = 'set_mimir_attr'
+    TYPE_ADD_LIQUIDITY = 'add_liquidity'
+    TYPE_WITHDRAW = 'withdraw'
+
+    @property
+    def type(self):
+        return re.sub(r'[^a-zA-Z0-9_]', '', self.data)
+
+    @property
+    def transfers(self):
+        return [e for e in self.events if e.type == 'transfer']
+
+    @classmethod
+    def from_json(cls, j):
+        result = j['result']
+        tx_result = result['tx_result']
+        data = base64.b64decode(tx_result['data']).decode('utf-8').strip()
+        log = ujson.loads(tx_result['log'])
+        events = [ThorTxEvent.from_json(e) for e in tx_result['events']]
+
+        return cls(
+            hash=result['hash'],
+            height=int(result['height']),
+            index=int(result['index']),
+            code=int(tx_result['code']),
+            data=data,
+            log=log,
+            gas_wanted=int(tx_result['gas_wanted']),
+            gas_used=int(tx_result['gas_used']),
+            events=events
         )
