@@ -1,6 +1,10 @@
+import base64
+import datetime
 from copy import copy
 from dataclasses import dataclass, field
+from hashlib import sha256
 from typing import List
+from dateutil.parser import parse as date_parser
 
 THOR_BASE_MULT = 10 ** 8
 
@@ -219,6 +223,7 @@ class ThorEnvironment:
     path_vault_yggdrasil: str = "/thorchain/vaults/yggdrasil"
     path_vault_asgard: str = "/thorchain/vaults/asgard"
     path_balance: str = '/bank/balances/{address}'
+    path_block_by_height: str = '/block?height={height}'
 
     def copy(self):
         return copy(self)
@@ -267,6 +272,18 @@ class ThorCoin:
             asset=j.get('asset'),
             amount=int(j.get('amount', 0)),
             decimals=int(j.get('decimals', 18))
+        )
+
+    @property
+    def amount_float(self):
+        return self.amount / (10 ** self.decimals)
+
+    @classmethod
+    def from_json_bank(cls, j):
+        return cls(
+            amount=int(j.get('amount', 0)),
+            asset=j.get('denom', ''),
+            decimals=8
         )
 
 
@@ -342,34 +359,17 @@ class ThorVault:
 
 
 @dataclass
-class ThorBalance:
-    amount: int
-    denom: str
-
-    @property
-    def amount_float(self):
-        return self.amount / THOR_BASE_MULT
-
-    @classmethod
-    def from_json(cls, j):
-        return cls(
-            amount=int(j.get('amount', 0)),
-            denom=j.get('denom', '')
-        )
-
-
-@dataclass
 class ThorBalances:
     RUNE = 'rune'
 
     height: int
-    assets: List[ThorBalance]
+    assets: List[ThorCoin]
     address: str
 
     @property
     def runes(self):
         for asset in self.assets:
-            if asset.denom == self.RUNE:
+            if asset.asset == self.RUNE:
                 return asset.amount
         return 0
 
@@ -382,7 +382,40 @@ class ThorBalances:
         return cls(
             height=int(j.get('height', 0)),
             assets=[
-                ThorBalance.from_json(item) for item in j.get('result')
+                ThorCoin.from_json_bank(item) for item in j.get('result')
             ],
             address=address
+        )
+
+
+@dataclass
+class ThorBlock:
+    height: int
+    chain_id: str
+    time: datetime.datetime
+    hash: str
+    txs_hashes: List[str]
+
+    @classmethod
+    def decode_tx_hash(cls, tx_b64: str):
+        decoded = base64.b64decode(tx_b64.encode('utf-8'))
+        return sha256(decoded).hexdigest().upper()
+
+    @classmethod
+    def from_json(cls, j):
+        result = j.get('result', {})
+        block = result['block']
+        header = block['header']
+        time = date_parser(header['time'])
+
+        txs = [
+            '0x' + cls.decode_tx_hash(content) for content in block['data']['txs']
+        ]
+
+        return cls(
+            height=int(header['height']),
+            chain_id=header['chain_id'],
+            time=time,
+            hash=result['block_id']['hash'],
+            txs_hashes=txs
         )

@@ -40,6 +40,7 @@ setuptools.setup(
         'idna>=3.1',
         'multidict>=5.1.0',
         'typing-extensions>=3.7.4.3',
+        'python-dateutil>=2.8.2',
         'ujson>=4.0.2',
         'yarl>=1.6.3',
     ]

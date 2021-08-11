@@ -3,7 +3,7 @@ import logging
 import time
 from operator import itemgetter
 from random import Random
-from typing import List, Dict
+from typing import Dict
 
 from aiohttp import ClientSession
 
@@ -170,11 +170,6 @@ class ThorConnector:
         data = await self._request(self.env.path_mimir, clients=clients, consensus=consensus)
         return ThorMimir.from_json(data)
 
-    async def query_tendermint_block_raw(self, height, clients=None, consensus=True):
-        clients = clients or (await self.get_random_clients())
-        data = await self._request(f'/block?height={height}', clients, consensus=consensus, is_rpc=True)
-        return data
-
     async def query_chain_info(self, clients=None, consensus=True) -> Dict[str, ThorChainInfo]:
         clients = clients or (await self.get_random_clients())
         data = await self._request(self.env.path_inbound_addresses, clients, consensus=consensus)
@@ -197,6 +192,16 @@ class ThorConnector:
         path = self.env.path_balance.format(address=address)
         data = await self._request(path, clients, consensus=consensus)
         return ThorBalances.from_json(data, address)
+
+    async def query_tendermint_block_raw(self, height, clients=None, consensus=True):
+        clients = clients or (await self.get_random_clients())
+        path = self.env.path_block_by_height.format(height=height)
+        data = await self._request(path, clients, consensus=consensus, is_rpc=True)
+        return data
+
+    async def query_block(self, height=0, clients=None, consensus=True) -> ThorBalances:
+        data = await self.query_tendermint_block_raw(height, clients, consensus)
+        return ThorBlock.from_json(data)
 
     # --- POST PROCESSORS ----
 
