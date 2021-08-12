@@ -37,8 +37,15 @@ class ThorEnvironment:
         assert 1 <= minimum <= total
         self.consensus_total = total
         self.consensus_min = minimum
+        return self
+
+    def set_timeout(self, timeout):
+        assert timeout > 0.0
+        self.timeout = timeout
+        return self
 
 
+# deprecated!
 CHAOS_NET_BNB_ENVIRONMENT = ThorEnvironment(seed_url='https://chaosnet-seed.thorchain.info/',
                                             midgard_url='https://chaosnet-midgard.bepswap.com/',
                                             path_nodes='/thorchain/nodeaccounts',
@@ -53,4 +60,3 @@ MULTICHAIN_CHAOSNET_ENVIRONMENT = ThorEnvironment(seed_url='https://seed.thorcha
 SCCN = CHAOS_NET_BNB_ENVIRONMENT  # alias
 MCCN = MULTICHAIN_CHAOSNET_ENVIRONMENT  # alias
 MCTN = TEST_NET_ENVIRONMENT_MULTI_1  # alias
-

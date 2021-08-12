@@ -32,16 +32,19 @@ class ThorConnector:
     def active_ip_addresses(self):
         return [c.node_ip for c in self._clients]
 
-    async def _request(self, path: str, clients: List[ThorNodeClient], consensus=True, post_processor=None,
+    async def _request(self, path: str, clients: List[ThorNodeClient],
+                       consensus=True, post_processor=None,
                        is_rpc=False):
         self.logger.debug(f'Start request to Thor node "{path}"')
+
+        # get random clients if none passed in
+        clients = clients or (await self.get_random_clients())
 
         m, n = self.env.consensus_min, self.env.consensus_total
         if len(clients) < n:
             self.logger.warning(f'Too few nodes in the network!')
             m = 0
 
-        # clients = clients[:self.env.consensus_total]  # limit requests!
         json_responses = await asyncio.gather(*[client.request(path, is_rpc=is_rpc) for client in clients])
 
         bad_clients = [client.node_ip for client, json_response in zip(clients, json_responses) if
@@ -124,23 +127,19 @@ class ThorConnector:
     # --- METHODS ----
 
     async def query_custom_path(self, path, clients=None):
-        clients = clients or (await self.get_random_clients())
         data = await self._request(path, clients)
         return data
 
     async def query_node_accounts(self, clients=None, consensus=True) -> List[ThorNodeAccount]:
-        clients = clients or (await self.get_random_clients())
         data = await self._request(self.env.path_nodes, clients, consensus=consensus,
                                    post_processor=self.post_processor_for_pools)
         return [ThorNodeAccount.from_json(j) for j in data] if data else []
 
     async def query_queue(self, clients=None, consensus=True) -> ThorQueue:
-        clients = clients or (await self.get_random_clients())
         data = await self._request(self.env.path_queue, clients, consensus=consensus)
         return ThorQueue.from_json(data)
 
     async def query_pools(self, height=None, *, clients=None, consensus=True) -> List[ThorPool]:
-        clients = clients or (await self.get_random_clients())
         if height:
             path = self.env.path_pools_height.format(height=height)
         else:
@@ -149,7 +148,6 @@ class ThorConnector:
         return [ThorPool.from_json(j) for j in data]
 
     async def query_pool(self, pool: str, height=None, *, clients=None, consensus=True) -> ThorPool:
-        clients = clients or (await self.get_random_clients())
         if height:
             path = self.env.path_pool_height.format(pool=pool, height=height)
         else:
@@ -158,22 +156,18 @@ class ThorConnector:
         return ThorPool.from_json(data)
 
     async def query_last_blocks(self, clients=None, consensus=True) -> List[ThorLastBlock]:
-        clients = clients or (await self.get_random_clients())
         data = await self._request(self.env.path_last_blocks, clients=clients, consensus=consensus)
         return [ThorLastBlock.from_json(j) for j in data] if isinstance(data, list) else [ThorLastBlock.from_json(data)]
 
     async def query_constants(self, clients=None, consensus=True) -> ThorConstants:
-        clients = clients or (await self.get_random_clients())
         data = await self._request(self.env.path_constants, clients=clients, consensus=consensus)
         return ThorConstants.from_json(data)
 
     async def query_mimir(self, clients=None, consensus=True) -> ThorMimir:
-        clients = clients or (await self.get_random_clients())
         data = await self._request(self.env.path_mimir, clients=clients, consensus=consensus)
         return ThorMimir.from_json(data)
 
     async def query_chain_info(self, clients=None, consensus=True) -> Dict[str, ThorChainInfo]:
-        clients = clients or (await self.get_random_clients())
         data = await self._request(self.env.path_inbound_addresses, clients, consensus=consensus)
         if isinstance(data, list):
             info_list = [ThorChainInfo.from_json(j) for j in data]
@@ -184,19 +178,16 @@ class ThorConnector:
         return {info.chain: info for info in info_list}
 
     async def query_vault(self, vault_type=ThorVault.TYPE_ASGARD, clients=None, consensus=True) -> List[ThorVault]:
-        clients = clients or (await self.get_random_clients())
         path = self.env.path_vault_asgard if vault_type == ThorVault.TYPE_ASGARD else self.env.path_vault_yggdrasil
         data = await self._request(path, clients, consensus=consensus)
         return [ThorVault.from_json(v) for v in data]
 
     async def query_balance(self, address: str, clients=None, consensus=True) -> ThorBalances:
-        clients = clients or (await self.get_random_clients())
         path = self.env.path_balance.format(address=address)
         data = await self._request(path, clients, consensus=consensus)
         return ThorBalances.from_json(data, address)
 
     async def query_tendermint_block_raw(self, height, clients=None, consensus=True):
-        clients = clients or (await self.get_random_clients())
         path = self.env.path_block_by_height.format(height=height)
         data = await self._request(path, clients, consensus=consensus, is_rpc=True)
         return data
@@ -210,12 +201,13 @@ class ThorConnector:
         if not tx_hash.startswith('0x') and not tx_hash.startswith('0X'):
             tx_hash = f'0x{tx_hash}'
 
-        clients = clients or (await self.get_random_clients())
         path = self.env.path_tx_by_hash.format(hash=tx_hash)
         data = await self._request(path, clients, consensus=consensus, is_rpc=True)
         return ThorNativeTX.from_json(data)
 
-    async def query_native_tx_search(self, query: str, page: int = 1, per_page: int = 50, order_by='"asc"',
+    async def query_native_tx_search(self,
+                                     query: str,
+                                     page: int = 1, per_page: int = 50, order_by='"asc"',
                                      prove=True,
                                      clients=None, consensus=True):
         if not query.startswith('"'):
@@ -231,7 +223,6 @@ class ThorConnector:
             per_page=per_page,
             order_by=order_by
         )
-        clients = clients or (await self.get_random_clients())
         data = await self._request(path, clients, consensus=consensus, is_rpc=True)
         return ThorNativeTXSearchResults.from_json(data)
 
