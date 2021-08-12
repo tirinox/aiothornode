@@ -458,7 +458,7 @@ class ThorNativeTX:
 
     @classmethod
     def from_json(cls, j):
-        result = j['result']
+        result = j.get('result', j)
         tx_result = result['tx_result']
         data = base64.b64decode(tx_result['data']).decode('utf-8').strip()
         log = ujson.loads(tx_result['log'])
@@ -474,4 +474,17 @@ class ThorNativeTX:
             gas_wanted=int(tx_result['gas_wanted']),
             gas_used=int(tx_result['gas_used']),
             events=events
+        )
+
+
+class ThorNativeTXSearchResults(typing.NamedTuple):
+    total_count: int
+    txs: List[ThorNativeTX]
+
+    @classmethod
+    def from_json(cls, j):
+        result = j.get('result', {})
+        return cls(
+            total_count=int(result.get('total_count', 0)),
+            txs=[ThorNativeTX.from_json(tx) for tx in result.get('txs', [])]
         )

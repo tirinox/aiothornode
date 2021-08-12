@@ -57,6 +57,16 @@ async def main():
         print(f'Balance of {bank.address} is {bank.runes_float} Rune')
         delim()
 
+        txs = await connector.query_native_tx_search("tx.height=1522004", page=1, per_page=2)
+        print(f'Txs search: {txs}')
+        delim()
+
+        tx = await connector.query_native_tx(
+            'E8510F9636377D66BEC8E263FBFE0B86C92CD3E801794BFFA553C5A9CA42CF09'
+        )
+        print(f'Tx = {tx}')
+        delim()
+
 
 if __name__ == '__main__':
     asyncio.run(main())

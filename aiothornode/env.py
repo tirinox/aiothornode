@@ -27,6 +27,7 @@ class ThorEnvironment:
     path_balance: str = '/bank/balances/{address}'
     path_block_by_height: str = '/block?height={height}'
     path_tx_by_hash: str = '/tx?hash={hash}'
+    path_tx_search: str = '/tx_search?query={query}&prove={prove}&page={page}&per_page={per_page}&order_by={order_by}'
 
     def copy(self):
         return copy(self)

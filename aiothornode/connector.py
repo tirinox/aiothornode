@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+import urllib.parse
 from operator import itemgetter
 from random import Random
 from typing import Dict
@@ -213,6 +214,26 @@ class ThorConnector:
         path = self.env.path_tx_by_hash.format(hash=tx_hash)
         data = await self._request(path, clients, consensus=consensus, is_rpc=True)
         return ThorNativeTX.from_json(data)
+
+    async def query_native_tx_search(self, query: str, page: int = 1, per_page: int = 50, order_by='"asc"',
+                                     prove=True,
+                                     clients=None, consensus=True):
+        if not query.startswith('"'):
+            query = f'"{query}"'
+        if not order_by.startswith('"'):
+            order_by = f'"{order_by}"'
+        query = urllib.parse.quote_plus(query)
+        order_by = urllib.parse.quote_plus(order_by)
+        path = self.env.path_tx_search.format(
+            query=query,
+            prove='true' if prove else 'false',
+            page=page,
+            per_page=per_page,
+            order_by=order_by
+        )
+        clients = clients or (await self.get_random_clients())
+        data = await self._request(path, clients, consensus=consensus, is_rpc=True)
+        return ThorNativeTXSearchResults.from_json(data)
 
     # --- POST PROCESSORS ----
 
