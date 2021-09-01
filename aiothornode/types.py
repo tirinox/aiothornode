@@ -2,12 +2,14 @@ import base64
 import datetime
 import re
 import typing
-from dataclasses import dataclass, field
+from dataclasses import field
 from hashlib import sha256
 from typing import List
 
 import ujson
 from dateutil.parser import parse as date_parser
+
+from .env import *
 
 THOR_BASE_MULT = 10 ** 8
 

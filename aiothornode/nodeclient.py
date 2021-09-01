@@ -29,6 +29,7 @@ class ThorNodeClient:
         port = self.tendermint_rpc_port if is_rpc else self.thornode_port
         url = self.connection_url(self.node_ip, path, port)
         try:
+            self.logger.debug(f'Node GET "{url}"')
             async with self.session.get(url, timeout=self.timeout) as resp:
                 text = await resp.text()
                 return ujson.loads(text)
