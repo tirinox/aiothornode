@@ -31,13 +31,19 @@ class ThorException(Exception):
 
 @dataclass
 class ThorQueue:
-    outbound: str = '0'
-    swap: str = '0'
-    internal: str = '0'
+    outbound: int = 0
+    swap: int = 0
+    internal: int = 0
+    scheduled_outbound_value: int = 0
 
     @classmethod
     def from_json(cls, j):
-        return cls(**j)
+        return cls(
+            outbound=int(j.get('outbound', -1)),
+            swap=int(j.get('swap', -1)),
+            internal=int(j.get('internal', -1)),
+            scheduled_outbound_value=int(j.get('scheduled_outbound_value', -1)),
+        )
 
     @property
     def total(self):
