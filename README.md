@@ -2,6 +2,10 @@
 
 This is a simple Python library to access [THORChain](https://thorchain.org/) nodes. It is asynchronous and uses _aiohttp_.
 
+## Important
+
+v.0.0.21 is hotfix. Port 1317 was disabled, so it is an emergency upgrade to save this lib. More news will be later... 
+
 Features:
 
 * Connecting to a seed service
