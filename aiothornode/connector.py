@@ -9,7 +9,6 @@ from typing import Dict
 from aiohttp import ClientSession
 
 from .consensus import consensus_response, first_not_null
-from .env import ThorEnvironment
 from .nodeclient import ThorNodeClient, ThorNodePublicClient
 from .types import *
 
@@ -33,50 +32,50 @@ class ThorConnector:
         return [c.node_ip for c in self._clients]
 
     async def _public_request(self, path: str, is_rpc=False):
-        client = ThorNodePublicClient(self.session, logger=self.logger)
+        client = ThorNodePublicClient(self.session, logger=self.logger, env=self.env)
         return await client.request(path, is_rpc)
 
     async def _request(self, path: str, clients: List[ThorNodeClient],
                        consensus=True, post_processor=None,
                        is_rpc=False):
-        return await self._public_request(path, is_rpc)
-
         self.logger.debug(f'Start request to Thor node "{path}"')
 
         return await self._public_request(path, is_rpc)
 
-        # get random clients if none passed in
-        # clients = clients or (await self.get_random_clients())
-        #
-        # m, n = self.env.consensus_min, self.env.consensus_total
-        # if len(clients) < n:
-        #     self.logger.warning(f'Too few nodes in the network!')
-        #     m = 0
-        #
-        # json_responses = await asyncio.gather(*[client.request(path, is_rpc=is_rpc) for client in clients])
-        #
-        # bad_clients = [client.node_ip for client, json_response in zip(clients, json_responses) if
-        #                json_response is None]
-        # if self.auto_ban and bad_clients:
-        #     self.logger.info(f'Banning clients: {bad_clients}.')
-        #     self.ban_list.update(set(bad_clients))
-        #
-        # if consensus:
-        #     best_response, ratio = consensus_response(json_responses, consensus_n=m, total_n=n,
-        #                                               post_processor=post_processor)
-        # else:
-        #     best_response, ratio = first_not_null(json_responses), 1.0
-        #
-        # if best_response is None:
-        #     ips = [client.node_ip for client in clients]
-        #     self.logger.error(f'No consensus reached between nodes: {ips} for request "{path}"!')
-        #     return None
-        # else:
-        #     self.logger.debug(f'Success for the request "{path}" consensus: {(ratio * 100.0):.0f}%')
-        #     if isinstance(best_response, dict) and 'code' in best_response:
-        #         raise ThorException(best_response)
-        #     else:
-        #         return best_response
+    async def _request_consensus(self, path: str, clients: List[ThorNodeClient],
+                                 consensus=True, post_processor=None,
+                                 is_rpc=False):
+        clients = clients or (await self.get_random_clients())
+
+        m, n = self.env.consensus_min, self.env.consensus_total
+        if len(clients) < n:
+            self.logger.warning(f'Too few nodes in the network!')
+            m = 0
+
+        json_responses = await asyncio.gather(*[client.request(path, is_rpc=is_rpc) for client in clients])
+
+        bad_clients = [client.node_ip for client, json_response in zip(clients, json_responses) if
+                       json_response is None]
+        if self.auto_ban and bad_clients:
+            self.logger.info(f'Banning clients: {bad_clients}.')
+            self.ban_list.update(set(bad_clients))
+
+        if consensus:
+            best_response, ratio = consensus_response(json_responses, consensus_n=m, total_n=n,
+                                                      post_processor=post_processor)
+        else:
+            best_response, ratio = first_not_null(json_responses), 1.0
+
+        if best_response is None:
+            ips = [client.node_ip for client in clients]
+            self.logger.error(f'No consensus reached between nodes: {ips} for request "{path}"!')
+            return None
+        else:
+            self.logger.debug(f'Success for the request "{path}" consensus: {(ratio * 100.0):.0f}%')
+            if isinstance(best_response, dict) and 'code' in best_response:
+                raise ThorException(best_response)
+            else:
+                return best_response
 
     async def _load_seed_list(self):
         assert self.session

@@ -79,6 +79,41 @@ class ThorNodeAccount:
     observe_chains: list = field(default_factory=list)
     preflight_status: dict = field(default_factory=dict)
 
+    """
+    {
+  'node_address': 'thor104gsqwta048e80j909g6y9kkqdjrw0lff866ew',
+  'status': 'Whitelisted',
+  'pub_key_set': {},
+  'validator_cons_pub_key': '',
+  'bond': '2',
+  'active_block_height': 0,
+  'bond_address': 'thor1v6yh9m26tpytqndr368c42lt4ja0898djh5y7l',
+  'status_since': 902755,
+  'signer_membership': [],
+  'requested_to_leave': False,
+  'forced_to_leave': False,
+  'leave_height': 0,
+  'ip_address': '',
+  'version': '0.0.0',
+  'slash_points': 0,
+  'jail': {
+    'node_address': 'thor104gsqwta048e80j909g6y9kkqdjrw0lff866ew'
+  },
+  'current_award': '0',
+  'observe_chains': None,
+  'preflight_status': {
+    'status': 'Standby',
+    'reason': 'node account has invalid registered IP address',
+    'code': 1
+  },
+  'bond_providers': {
+    'node_address': 'thor104gsqwta048e80j909g6y9kkqdjrw0lff866ew',
+    'node_operator_fee': '0',
+    'providers': []
+  }
+}
+    """
+
     @classmethod
     def from_json(cls, j):
         return cls(**j)
@@ -356,12 +391,16 @@ class ThorBalances:
     @classmethod
     def from_json(cls, j, address):
         return cls(
-            height=int(j.get('height', 0)),
+            height=0,
             assets=[
-                ThorCoin.from_json_bank(item) for item in j.get('result')
+                ThorCoin.from_json_bank(item) for item in j.get('balances')
             ],
             address=address
         )
+
+    def find_by_name(self, name):
+        candidates = [coin for coin in self.assets if coin.asset == name]
+        return candidates[0] if candidates else None
 
 
 @dataclass

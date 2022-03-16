@@ -4,12 +4,11 @@ import logging
 import ujson
 from aiohttp import ClientSession, ClientConnectorError
 
+from aiothornode.env import ThorEnvironment
+
 THORNODE_PORT = 1317
 TENDERMINT_RPC_PORT_TESTNET = 26657
 TENDERMINT_RPC_PORT_MAINNET = 27147
-
-PUBLIC_THORNODE_URL = 'https://thornode.thorchain.info'
-PUBLIC_THORNODE_RPC_URL = 'https://rpc.thorchain.info/'
 
 
 class ThorNodeClient:
@@ -44,12 +43,13 @@ class ThorNodeClient:
 
 
 class ThorNodePublicClient(ThorNodeClient):
-    def __init__(self, session: ClientSession, timeout=3.0, logger=None,
-                 tendermint_rpc_port=TENDERMINT_RPC_PORT_MAINNET):
-        super().__init__('', session, timeout, logger, 0, tendermint_rpc_port)
+    def __init__(self, session: ClientSession, env: ThorEnvironment, logger=None):
+        port = TENDERMINT_RPC_PORT_TESTNET if env.kind == 'testnet' else TENDERMINT_RPC_PORT_MAINNET
+        super().__init__('', session, env.timeout, logger, 0, port)
+        self.env = env
 
     def connection_url(self, ip_address, path, is_rpc):
         if is_rpc:
-            return f'{PUBLIC_THORNODE_RPC_URL}{path}'
+            return f'{self.env.rpc_url}{path}'
         else:
-            return f'{PUBLIC_THORNODE_URL}{path}'
+            return f'{self.env.thornode_url}{path}'

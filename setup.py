@@ -1,24 +1,11 @@
 import setuptools
 
-# from pip._internal.req import parse_requirements
-
 with open('README.md', 'r') as f:
     long_description = f.read()
 
-
-# def my_parse_requirements(filename):
-#     install_reqs = parse_requirements(filename, session=False)
-#     return [str(ir.requirement) for ir in install_reqs]
-
-
-#     """ load requirements from a pip requirements file """
-#     lineiter = (line.strip() for line in open(filename))
-#     return [line for line in lineiter if line and not line.startswith("#")]
-
-
 setuptools.setup(
     name='aiothornode',
-    version='0.0.21',
+    version='0.0.22',
     description='THORChain node connection library for Python',
     long_description=long_description,
     long_description_content_type='text/markdown',
