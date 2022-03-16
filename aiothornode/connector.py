@@ -235,6 +235,10 @@ class ThorConnector:
         data = await self._request(path, clients, consensus=consensus, is_rpc=True)
         return ThorNativeTXSearchResults.from_json(data)
 
+    async def query_genesis(self, clients=None, consensus=True):
+        data = await self._request(self.env.path_genesis, clients, consensus, is_rpc=True)
+        return data['result']['genesis'] if data else None
+
     # --- POST PROCESSORS ----
 
     @staticmethod

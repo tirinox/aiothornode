@@ -18,6 +18,9 @@ async def main():
     async with aiohttp.ClientSession() as session:
         connector = ThorConnector(env, session)
 
+        genesis = await connector.query_genesis()
+        print(f'Chain ID = {genesis["chain_id"]}')
+        delim()
 
         chains = await connector.query_chain_info()
         chains = list(chains.values())
