@@ -78,6 +78,7 @@ class ThorNodeAccount:
     current_award: str = ''
     observe_chains: list = field(default_factory=list)
     preflight_status: dict = field(default_factory=dict)
+    bond_providers: dict = field(default_factory=dict)
 
     """
     {
@@ -115,8 +116,29 @@ class ThorNodeAccount:
     """
 
     @classmethod
-    def from_json(cls, j):
-        return cls(**j)
+    def from_json(cls: 'ThorNodeAccount', j):
+        return cls(
+            node_address=str(j.get('node_address', '')),
+            status=str(j.get('status', '')),
+            pub_key_set=j.get('pub_key_set'),
+            validator_cons_pub_key=str(j.get('validator_cons_pub_key', '')),
+            bond=int(j.get('bond', 0)),
+            active_block_height=int(j.get('active_block_height', 0)),
+            bond_address=str(j.get('bond_address', '')),
+            status_since=int(j.get('status_since', 0)),
+            signer_membership=j.get('signer_membership', []),
+            requested_to_leave=bool(j.get('requested_to_leave', False)),
+            forced_to_leave=bool(j.get('forced_to_leave', False)),
+            leave_height=int(j.get('leave_height', 0)),
+            ip_address=str(j.get('ip_address', '')),
+            version=str(j.get('version', '')),
+            slash_points=int(j.get('slash_points', 0)),
+            jail=j.get('jail', {}),
+            current_award=int(j.get('current_award', 0)),
+            observe_chains=j.get('observe_chains', []),
+            preflight_status=j.get('preflight_status', {}),
+            bond_providers=j.get('bond_providers', {})
+        )
 
     @property
     def preflight_status_reason_and_code(self):

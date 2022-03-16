@@ -204,12 +204,13 @@ class ThorConnector:
         data = await self.query_tendermint_block_raw(height, clients, consensus)
         return ThorBlock.from_json(data)
 
-    async def query_native_tx(self, tx_hash: str, clients=None, consensus=True):
+    async def query_native_tx(self, tx_hash: str, clients=None, consensus=True, before_hard_fork=False):
         tx_hash = str(tx_hash)
         if not tx_hash.startswith('0x') and not tx_hash.startswith('0X'):
             tx_hash = f'0x{tx_hash}'
 
-        path = self.env.path_tx_by_hash.format(hash=tx_hash)
+        path_pattern = self.env.path_tx_by_hash_old if before_hard_fork else self.env.path_tx_by_hash
+        path = path_pattern.format(hash=tx_hash)
         data = await self._request(path, clients, consensus=consensus, is_rpc=True)
         return ThorNativeTX.from_json(data)
 

@@ -1,3 +1,5 @@
+import random
+
 from aiothornode.connector import *
 from aiothornode.env import *
 import asyncio
@@ -9,12 +11,13 @@ def delim():
 
 
 async def main():
-    env = MULTICHAIN_CHAOSNET_ENVIRONMENT.copy()
+    env = MCCN.copy()
     # env = TEST_NET_ENVIRONMENT_MULTI_1.copy()  # TestNet
     # env = ThorEnvironment(seed_url='https://my-thor-seed.org')  # custom
 
     async with aiohttp.ClientSession() as session:
         connector = ThorConnector(env, session)
+
 
         chains = await connector.query_chain_info()
         chains = list(chains.values())
@@ -22,7 +25,7 @@ async def main():
         delim()
 
         print('Tendermint Block:')
-        tender_block = await connector.query_tendermint_block_raw(10001)
+        tender_block = await connector.query_tendermint_block_raw(100001)
         block_header = tender_block['result']['block']['header']
         print(f'{block_header["height"] = } and {block_header["time"] = }')
         delim()
@@ -41,7 +44,7 @@ async def main():
         delim()
 
         node_accounts = await connector.query_node_accounts(consensus=False)
-        print(f'Example node account: {node_accounts[0]}')
+        print(f'Example node account: {random.sample(node_accounts, 1)[0]}')
         delim()
 
         pool = await connector.query_pool('BNB.BUSD-BD1', height=71111)
@@ -62,7 +65,8 @@ async def main():
         delim()
 
         tx = await connector.query_native_tx(
-            'E8510F9636377D66BEC8E263FBFE0B86C92CD3E801794BFFA553C5A9CA42CF09'
+            '3A65AED750FE0461C87760FCA1614DCF3410778A92B8F5878E38FD4CFEB81860',
+            before_hard_fork=True
         )
         print(f'Tx = {tx}')
         delim()
