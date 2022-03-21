@@ -67,7 +67,7 @@ class ThorURL:
         THORSWAP = 'https://rpc.thorswap.net'
 
         STAGENET = 'https://stagenet-rpc.ninerealms.com'
-        TESTNET = 'https://rpc.thorchain.info'
+        TESTNET = 'https://testnet.rpc.thorchain.info/'
 
     class Midgard:
         PUBLIC = 'https://midgard.thorchain.info'
