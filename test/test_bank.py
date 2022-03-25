@@ -3,7 +3,7 @@ from .fixtures import *
 
 @pytest.mark.asyncio
 async def test_mccn_balance(chaosnet_connector: ThorConnector):
-    address = 'thor1q9vhc5zz8f097eyx7la4m35wsn7u3vds6sv9kg'
+    address = 'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt'
     balance = await chaosnet_connector.query_balance(address, consensus=False)
     # assert balance.height > 0  # no longer available
     assert balance.assets

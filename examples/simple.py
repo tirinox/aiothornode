@@ -59,7 +59,7 @@ async def main():
         print(f'Total {len(pools)} pools')
         delim()
 
-        bank = await connector.query_balance('thor1q9vhc5zz8f097eyx7la4m35wsn7u3vds6sv9kg')
+        bank = await connector.query_balance('thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt')
         print(f'Balance of {bank.address} is {bank.runes_float} Rune')
         delim()
 
