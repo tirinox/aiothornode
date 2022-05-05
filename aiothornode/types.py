@@ -80,41 +80,6 @@ class ThorNodeAccount:
     preflight_status: dict = field(default_factory=dict)
     bond_providers: dict = field(default_factory=dict)
 
-    """
-    {
-  'node_address': 'thor104gsqwta048e80j909g6y9kkqdjrw0lff866ew',
-  'status': 'Whitelisted',
-  'pub_key_set': {},
-  'validator_cons_pub_key': '',
-  'bond': '2',
-  'active_block_height': 0,
-  'bond_address': 'thor1v6yh9m26tpytqndr368c42lt4ja0898djh5y7l',
-  'status_since': 902755,
-  'signer_membership': [],
-  'requested_to_leave': False,
-  'forced_to_leave': False,
-  'leave_height': 0,
-  'ip_address': '',
-  'version': '0.0.0',
-  'slash_points': 0,
-  'jail': {
-    'node_address': 'thor104gsqwta048e80j909g6y9kkqdjrw0lff866ew'
-  },
-  'current_award': '0',
-  'observe_chains': None,
-  'preflight_status': {
-    'status': 'Standby',
-    'reason': 'node account has invalid registered IP address',
-    'code': 1
-  },
-  'bond_providers': {
-    'node_address': 'thor104gsqwta048e80j909g6y9kkqdjrw0lff866ew',
-    'node_operator_fee': '0',
-    'providers': []
-  }
-}
-    """
-
     @classmethod
     def from_json(cls: 'ThorNodeAccount', j):
         return cls(
@@ -180,6 +145,7 @@ class ThorPool:
     balance_asset: str = '0'
     balance_rune: str = '0'
     asset: str = ''
+    lp_units: str = '0'
     pool_units: str = '0'
     status: str = ''
     synth_units: str = ''
@@ -214,7 +180,8 @@ class ThorPool:
             balance_asset=j.get('balance_asset', '0'),
             balance_rune=j.get('balance_rune', '0'),
             asset=j.get('asset', ''),
-            pool_units=j.get('LP_units', '0') if 'LP_units' in j else j.get('pool_units', '0'),
+            lp_units=j.get('LP_units', '0'),
+            pool_units=j.get('pool_units', '0'),  # Sum of LP_units and synth_units
             status=j.get('status', cls.STATUS_BOOTSTRAP),
             synth_units=j.get('synth_units', '0'),
             decimals=j.get('decimals', '0'),
