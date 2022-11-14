@@ -97,7 +97,7 @@ MULTICHAIN_STAGENET_ENVIRONMENT = ThorEnvironment(
     kind='stagenet',
 )
 
-MULTICHAIN_CHAOSNET_ENVIRONMENT = ThorEnvironment(
+MAINNET_ENVIRONMENT = ThorEnvironment(
     seed_url=ThorURL.Seed.MAINNET,
     midgard_url=ThorURL.Midgard.PUBLIC,
     thornode_url=ThorURL.THORNode.PUBLIC,
@@ -105,7 +105,7 @@ MULTICHAIN_CHAOSNET_ENVIRONMENT = ThorEnvironment(
     kind='mainnet',
 )
 
-MULTICHAIN_CHAOSNET_9R_ENVIRONMENT = ThorEnvironment(
+MULTICHAIN_MAINNET_9R_ENVIRONMENT = ThorEnvironment(
     seed_url=ThorURL.Seed.MAINNET,
     midgard_url=ThorURL.Midgard.NINE_REALMS,
     thornode_url=ThorURL.THORNode.NINE_REALMS,
@@ -113,15 +113,15 @@ MULTICHAIN_CHAOSNET_9R_ENVIRONMENT = ThorEnvironment(
     kind='mainnet',
 )
 
-MULTICHAIN_CHAOSNET_THORSWAP_ENVIRONMENT = ThorEnvironment(
+MULTICHAIN_MAINNET_THORSWAP_ENVIRONMENT = ThorEnvironment(
     seed_url=ThorURL.Seed.MAINNET,
     midgard_url=ThorURL.Midgard.THORSWAP,
     thornode_url=ThorURL.THORNode.THORSWAP,
     rpc_url=ThorURL.RPC.THORSWAP,
     kind='mainnet',
 )
-
-MCCN = MULTICHAIN_CHAOSNET_ENVIRONMENT  # alias
+ 
+MAINNET = MAINNET_ENVIRONMENT  # alias
 MCTN = TEST_NET_ENVIRONMENT_MULTI_1  # alias
-MCCN_9R = MULTICHAIN_CHAOSNET_9R_ENVIRONMENT  # alias
-MCCN_THORSWAP = MULTICHAIN_CHAOSNET_THORSWAP_ENVIRONMENT  # alias
+MCCN_9R = MULTICHAIN_MAINNET_9R_ENVIRONMENT  # alias
+MCCN_THORSWAP = MULTICHAIN_MAINNET_THORSWAP_ENVIRONMENT  # alias

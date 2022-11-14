@@ -2,11 +2,15 @@
 
 This is a simple Python library to access [THORChain](https://thorchain.org/) nodes. It is asynchronous and uses _aiohttp_.
 
-## Important
+### Important
+
+v.0.1.0 breaking changes:
+1. NamedTuples instead of DataClasses for Thor entities
+2. Environments were renamed
 
 v.0.0.21 is hotfix. Port 1317 was disabled, so it is an emergency upgrade to save this lib. More news will be later... 
 
-Features:
+### Features:
 
 * Connecting to a seed service
 * Filter out inactive nodes
@@ -15,7 +19,7 @@ Features:
 * Automatically updates of the list of nodes
 * Automatic ban-list for bad nodes
 
-Supported endpoints:
+### Supported endpoints:
 
 * Constants
 * Mimir

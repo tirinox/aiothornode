@@ -1,17 +1,24 @@
 import base64
 import datetime
 import re
-import typing
-from dataclasses import field
 from hashlib import sha256
-from typing import List
+from typing import List, NamedTuple
 
 import ujson
 from dateutil.parser import parse as date_parser
 
-from .env import *
-
 THOR_BASE_MULT = 10 ** 8
+THOR_BASE_MULT_INV = 1.0 / THOR_BASE_MULT
+
+THOR_BASIS_POINT_MAX = 10_000
+
+
+def thor_to_float(x) -> float:
+    return int(x) * THOR_BASE_MULT_INV
+
+
+def float_to_thor(x: float) -> int:
+    return int(x * THOR_BASE_MULT)
 
 
 class ThorException(Exception):
@@ -29,8 +36,7 @@ class ThorException(Exception):
             ]
 
 
-@dataclass
-class ThorQueue:
+class ThorQueue(NamedTuple):
     outbound: int = 0
     swap: int = 0
     internal: int = 0
@@ -50,8 +56,7 @@ class ThorQueue:
         return int(self.outbound) + int(self.swap) + int(self.internal)
 
 
-@dataclass
-class ThorNodeAccount:
+class ThorNodeAccount(NamedTuple):
     STATUS_STANDBY = 'standby'
     STATUS_ACTIVE = 'active'
     STATUS_READY = 'ready'
@@ -61,27 +66,27 @@ class ThorNodeAccount:
 
     node_address: str = 'thor?'
     status: str = ''
-    pub_key_set: dict = field(default_factory=dict)
+    pub_key_set: dict = None
     validator_cons_pub_key: str = ''
-    bond: str = ''
+    bond: int = ''
     active_block_height: int = 0
     bond_address: str = ''
-    status_since: str = ''
-    signer_membership: list = field(default_factory=list)
+    status_since: int = ''
+    signer_membership: list = None
     requested_to_leave: bool = False
     forced_to_leave: bool = False
     leave_height: int = 0
     ip_address: str = ''
     version: str = ''
     slash_points: int = 0
-    jail: dict = field(default_factory=dict)
-    current_award: str = ''
-    observe_chains: list = field(default_factory=list)
-    preflight_status: dict = field(default_factory=dict)
-    bond_providers: dict = field(default_factory=dict)
+    jail: dict = None
+    current_award: int = ''
+    observe_chains: list = None
+    preflight_status: dict = None
+    bond_providers: dict = None
 
     @classmethod
-    def from_json(cls: 'ThorNodeAccount', j):
+    def from_json(cls, j):
         return cls(
             node_address=str(j.get('node_address', '')),
             status=str(j.get('status', '')),
@@ -115,12 +120,13 @@ class ThorNodeAccount:
     @property
     def is_good(self):
         status = self.status.lower()
-        return status in (self.STATUS_ACTIVE, self.STATUS_WHITELISTED) \
-               and not self.requested_to_leave and not self.forced_to_leave and self.ip_address
+        return (
+                status in (self.STATUS_ACTIVE, self.STATUS_WHITELISTED) and
+                not self.requested_to_leave and not self.forced_to_leave and self.ip_address
+        )
 
 
-@dataclass
-class ThorLastBlock:
+class ThorLastBlock(NamedTuple):
     chain: str = ''
     last_observed_in: int = 0
     last_signed_out: int = 0
@@ -128,79 +134,73 @@ class ThorLastBlock:
 
     @classmethod
     def from_json(cls, j):
-        x = cls()
-        x.chain = j.get('chain', '')
-        x.thorchain = j.get('thorchain', 0)
-        x.last_observed_in = j.get('last_observed_in', 0) if 'last_observed_in' in j else j.get('lastobservedin')
-        x.last_signed_out = j.get('last_signed_out', 0) if 'last_signed_out' in j else j.get('lastsignedout')
-        return x
+        return cls(
+            chain=j.get('chain', ''),
+            last_observed_in=j.get('last_observed_in', 0) if 'last_observed_in' in j else j.get('lastobservedin'),
+            last_signed_out=j.get('last_signed_out', 0) if 'last_signed_out' in j else j.get('lastsignedout'),
+            thorchain=j.get('thorchain', 0)
+        )
 
 
-@dataclass
-class ThorPool:
+class ThorPool(NamedTuple):
+    balance_asset: int = 0
+    balance_rune: int = 0
+    asset: str = ''
+    lp_units: int = 0
+    pool_units: int = 0
+    status: str = ''
+    synth_units: int = 0
+    decimals: int = 0
+    error: str = ''
+    pending_inbound_rune: int = 0
+    pending_inbound_asset: int = 0
+    savers_depth: int = 0
+    savers_units: int = 0
+    synth_mint_paused: bool = False
+    synth_supply: int = 0
+
     STATUS_AVAILABLE = 'Available'
     STATUS_BOOTSTRAP = 'Bootstrap'
     STATUS_ENABLED = 'Enabled'
 
-    balance_asset: str = '0'
-    balance_rune: str = '0'
-    asset: str = ''
-    lp_units: str = '0'
-    pool_units: str = '0'
-    status: str = ''
-    synth_units: str = ''
-    decimals: str = '0'
-    error: str = ''
-    pending_inbound_rune: str = '0'
-    pending_inbound_asset: str = '0'
-
-    @property
-    def balance_asset_int(self):
-        return int(self.balance_asset)
-
-    @property
-    def balance_rune_int(self):
-        return int(self.balance_rune)
-
-    @property
-    def pool_units_int(self):
-        return int(self.pool_units)
-
     @property
     def assets_per_rune(self):
-        return self.balance_asset_int / self.balance_rune_int
+        return self.balance_asset / self.balance_rune
 
     @property
     def runes_per_asset(self):
-        return self.balance_rune_int / self.balance_asset_int
+        return self.balance_rune / self.balance_asset
 
     @classmethod
     def from_json(cls, j):
         return cls(
-            balance_asset=j.get('balance_asset', '0'),
-            balance_rune=j.get('balance_rune', '0'),
+            balance_asset=int(j.get('balance_asset', 0)),
+            balance_rune=int(j.get('balance_rune', 0)),
             asset=j.get('asset', ''),
-            lp_units=j.get('LP_units', '0'),
-            pool_units=j.get('pool_units', '0'),  # Sum of LP_units and synth_units
+            lp_units=int(j.get('LP_units', 0)),
+            pool_units=int(j.get('pool_units', 0)),  # Sum of LP_units and synth_units
             status=j.get('status', cls.STATUS_BOOTSTRAP),
-            synth_units=j.get('synth_units', '0'),
-            decimals=j.get('decimals', '0'),
+            synth_units=int(j.get('synth_units', 0)),
+            synth_supply=int(j.get('synth_supply', 0)),
+            decimals=int(j.get('decimals', 0)),
             error=j.get('error', ''),
-            pending_inbound_rune=j.get('pending_inbound_rune', '0'),
-            pending_inbound_asset=j.get('pending_inbound_asset', '0'),
+            pending_inbound_rune=int(j.get('pending_inbound_rune', 0)),
+            pending_inbound_asset=int(j.get('pending_inbound_asset', 0)),
+            savers_depth=int(j.get('savers_depth', 0)),
+            savers_units=int(j.get('savers_units', 0)),
+            synth_mint_paused=bool(j.get('synth_mint_paused', False)),
         )
 
 
-@dataclass
-class ThorConstants:
-    constants: dict = field(default_factory=dict)
-    data_types: dict = field(default_factory=dict)
+class ThorConstants(NamedTuple):
+    constants: dict = None
+    data_types: dict = None
 
     DATA_TYPES = ('int_64_values', 'bool_values', 'string_values')
 
     @classmethod
     def from_json(cls, j):
-        holder = cls()
+        holder = cls({}, {})
         for dt in cls.DATA_TYPES:
             subset = j.get(dt, {})
             holder.data_types[dt] = {}
@@ -217,13 +217,12 @@ class ThorConstants:
         return self.constants[item]
 
 
-@dataclass
-class ThorMimir:
-    constants: dict = field(default_factory=dict)
+class ThorMimir(NamedTuple):
+    constants: dict = None
 
     @classmethod
     def from_json(cls, j: dict):
-        holder = cls()
+        holder = cls({})
         for k, v in j.items():
             holder.constants[k] = v
         return holder
@@ -235,14 +234,20 @@ class ThorMimir:
         return self.constants[item]
 
 
-@dataclass
-class ThorChainInfo:
+class ThorChainInfo(NamedTuple):
     chain: str = ''
     pub_key: str = ''
     address: str = ''
     router: str = ''  # for smart-contract based chains
     halted: bool = False
     gas_rate: int = 0
+    chain_lp_actions_paused: bool = False
+    chain_trading_paused: bool = False
+    dust_threshold: int = 0
+    gas_rate_units: str = ''
+    global_trading_paused: bool = False
+    outbound_fee: int = 0
+    outbound_tx_size: int = 0
 
     @property
     def is_ok(self):
@@ -257,11 +262,17 @@ class ThorChainInfo:
             router=j.get('router', ''),
             halted=bool(j.get('halted', True)),
             gas_rate=int(j.get('gas_rate', 0)),
+            chain_lp_actions_paused=bool(j.get('chain_lp_actions_paused', False)),
+            chain_trading_paused=bool(j.get('chain_trading_paused', False)),
+            global_trading_paused=bool(j.get('global_trading_paused', False)),
+            dust_threshold=int(j.get('dust_threshold', 0)),
+            gas_rate_units=j.get('gas_rate_units', ''),
+            outbound_fee=int(j.get('outbound_fee', 0)),
+            outbound_tx_size=int(j.get('outbound_tx_size', 0))
         )
 
 
-@dataclass
-class ThorCoin:
+class ThorCoin(NamedTuple):
     asset: str = ''
     amount: int = 0
     decimals: int = 18
@@ -287,8 +298,7 @@ class ThorCoin:
         )
 
 
-@dataclass
-class ThorRouter:
+class ThorRouter(NamedTuple):
     chain: str = ''
     router: str = ''
 
@@ -300,8 +310,7 @@ class ThorRouter:
         )
 
 
-@dataclass
-class ThorAddress:
+class ThorAddress(NamedTuple):
     chain: str = ''
     address: str = ''
 
@@ -313,20 +322,19 @@ class ThorAddress:
         )
 
 
-@dataclass
-class ThorVault:
+class ThorVault(NamedTuple):
     block_height: int = 0
     pub_key: str = ''
-    coins: List[ThorCoin] = field(default_factory=list)
+    coins: List[ThorCoin] = None
     type: str = ''
     status: str = ''
     status_since: int = 0
-    membership: List[str] = field(default_factory=list)
-    chains: List[str] = field(default_factory=list)
+    membership: List[str] = None
+    chains: List[str] = None
     inbound_tx_count: int = 0
     outbound_tx_count: int = 0
-    routers: List[ThorRouter] = field(default_factory=list)
-    addresses: List[ThorAddress] = field(default_factory=list)
+    routers: List[ThorRouter] = None
+    addresses: List[ThorAddress] = None
 
     TYPE_YGGDRASIL = 'YggdrasilVault'
     TYPE_ASGARD = 'AsgardVault'
@@ -358,10 +366,10 @@ class ThorVault:
         )
 
 
-@dataclass
-class ThorBalances:
-    RUNE = 'rune'
+RUNE = 'rune'
 
+
+class ThorBalances(NamedTuple):
     height: int
     assets: List[ThorCoin]
     address: str
@@ -369,13 +377,13 @@ class ThorBalances:
     @property
     def runes(self):
         for asset in self.assets:
-            if asset.asset == self.RUNE:
+            if asset.asset == RUNE:
                 return asset.amount
         return 0
 
     @property
     def runes_float(self):
-        return self.runes / THOR_BASE_MULT
+        return thor_to_float(self.runes)
 
     @classmethod
     def from_json(cls, j, address):
@@ -392,8 +400,7 @@ class ThorBalances:
         return candidates[0] if candidates else None
 
 
-@dataclass
-class ThorBlock:
+class ThorBlock(NamedTuple):
     height: int
     chain_id: str
     time: datetime.datetime
@@ -425,7 +432,7 @@ class ThorBlock:
         )
 
 
-class ThorTxAttribute(typing.NamedTuple):
+class ThorTxAttribute(NamedTuple):
     key: str
     value: str
     index: bool
@@ -439,7 +446,7 @@ class ThorTxAttribute(typing.NamedTuple):
         )
 
 
-class ThorTxEvent(typing.NamedTuple):
+class ThorTxEvent(NamedTuple):
     type: str
     attributes: List[ThorTxAttribute]
 
@@ -468,8 +475,7 @@ class ThorTxEvent(typing.NamedTuple):
         return int(value), asset
 
 
-@dataclass
-class ThorNativeTX:
+class ThorNativeTX(NamedTuple):
     hash: str
     height: int
     index: int
@@ -513,7 +519,7 @@ class ThorNativeTX:
         )
 
 
-class ThorNativeTXSearchResults(typing.NamedTuple):
+class ThorNativeTXSearchResults(NamedTuple):
     total_count: int
     txs: List[ThorNativeTX]
 

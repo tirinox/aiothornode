@@ -1,12 +1,12 @@
 import pytest
 
-from aiothornode.env import CHAOS_NET_BNB_ENVIRONMENT, TEST_NET_ENVIRONMENT_MULTI_1
+from aiothornode.env import MAINNET_ENVIRONMENT
 
 
 def test_env_copy():
-    env = CHAOS_NET_BNB_ENVIRONMENT.copy()
+    env = MAINNET_ENVIRONMENT.copy()
     env.seed_url = 'lol'
-    assert CHAOS_NET_BNB_ENVIRONMENT.seed_url is not 'lol'
+    assert MAINNET_ENVIRONMENT.seed_url is not 'lol'
 
     with pytest.raises(AssertionError):
         env.set_consensus(0, 0)

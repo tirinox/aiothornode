@@ -9,6 +9,7 @@ from typing import Dict
 from aiohttp import ClientSession
 
 from .consensus import consensus_response, first_not_null
+from .env import ThorEnvironment
 from .nodeclient import ThorNodeClient, ThorNodePublicClient
 from .types import *
 

@@ -5,7 +5,7 @@ with open('README.md', 'r') as f:
 
 setuptools.setup(
     name='aiothornode',
-    version='0.0.24',
+    version='0.1.0',
     description='THORChain node connection library for Python',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -20,7 +20,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        'aiohttp>=3.7.3',
+        'aiohttp>=3.8.0',
         'async-timeout>=3.0.1',
         'attrs>=20.3.0',
         'chardet>=3.0.4',
