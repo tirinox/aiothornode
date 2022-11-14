@@ -7,17 +7,13 @@ This is a simple Python library to access [THORChain](https://thorchain.org/) no
 v.0.1.0 breaking changes:
 1. NamedTuples instead of DataClasses for Thor entities
 2. Environments were renamed
+3. No more consensus features
 
 v.0.0.21 is hotfix. Port 1317 was disabled, so it is an emergency upgrade to save this lib. More news will be later... 
 
 ### Features:
 
-* Connecting to a seed service
-* Filter out inactive nodes
-* Simple consensus algorithm (connecting to a random subset of active nodes and sending them the same request and
-  choosing the most frequent answer)
-* Automatically updates of the list of nodes
-* Automatic ban-list for bad nodes
+* Now it is just a convenient wrapper for THORNode API
 
 ### Supported endpoints:
 
@@ -53,9 +49,8 @@ def delim():
 
 
 async def main():
-    env = MCCN.copy()
-    # env = TEST_NET_ENVIRONMENT_MULTI_1.copy()  # TestNet
-    # env = ThorEnvironment(seed_url='https://my-thor-seed.org')  # custom
+    env = MAINNET.copy()
+    # env = ThorEnvironment(...)  # custom
 
     async with aiohttp.ClientSession() as session:
         connector = ThorConnector(env, session)
@@ -80,7 +75,7 @@ async def main():
         delim()
 
         mimir = await connector.query_mimir()
-        mimir_1 = mimir.get('mimir//MINIMUMBONDINRUNE')
+        mimir_1 = mimir.get('MINIMUMBONDINRUNE')
         print(f'Mimir: {mimir}, MINIMUMBONDINRUNE = {mimir_1}')
         delim()
 
@@ -92,7 +87,7 @@ async def main():
         print(f'Example node account: {random.sample(node_accounts, 1)[0]}')
         delim()
 
-        pool = await connector.query_pool('BNB.BUSD-BD1', height=71111)
+        pool = await connector.query_pool('BNB.BUSD-BD1', height=8218339)
         print(pool)
         delim()
 
@@ -105,7 +100,7 @@ async def main():
         print(f'Balance of {bank.address} is {bank.runes_float} Rune')
         delim()
 
-        txs = await connector.query_native_tx_search("tx.height=1522004", page=1, per_page=2)
+        txs = await connector.query_native_tx_search("tx.height=8218339", page=1, per_page=2)
         print(f'Txs search: {txs}')
         delim()
 

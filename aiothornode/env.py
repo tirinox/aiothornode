@@ -10,8 +10,6 @@ class ThorEnvironment:
     rpc_url: str = ''
 
     timeout: float = 6.0
-    consensus_min: int = 2
-    consensus_total: int = 3
 
     path_queue: str = '/thorchain/queue'
     path_nodes: str = '/thorchain/nodes'
@@ -38,13 +36,6 @@ class ThorEnvironment:
 
     def copy(self):
         return copy(self)
-
-    def set_consensus(self, minimum, total):
-        assert total >= 1
-        assert 1 <= minimum <= total
-        self.consensus_total = total
-        self.consensus_min = minimum
-        return self
 
     def set_timeout(self, timeout):
         assert timeout > 0.0

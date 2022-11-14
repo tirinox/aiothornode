@@ -23,7 +23,7 @@ class ThorNodeClient:
         self.session = session
         self.timeout = timeout
         self.node_ip = node_ip
-        self.logger = logger or logging.getLogger('ThorNodeClient')
+        self.logger = logger or logging.getLogger(self.__class__.__name__)
         self.tendermint_rpc_port = tendermint_rpc_port
         self.thornode_port = thornode_port
 
@@ -33,6 +33,7 @@ class ThorNodeClient:
             self.logger.debug(f'Node GET "{url}"')
             async with self.session.get(url, timeout=self.timeout) as resp:
                 text = await resp.text()
+                self.logger.debug(f'Node RESPONSE "{url}" code={resp.status}')
                 return ujson.loads(text)
         except (ClientConnectorError, asyncio.TimeoutError, ValueError) as e:
             self.logger.warning(f'Cannot connect to THORNode ({self.node_ip}) for "{path}" (err: {e}).')
