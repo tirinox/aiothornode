@@ -54,7 +54,7 @@ class ThorURL:
 
     class RPC:
         PUBLIC = 'https://rpc.thorchain.info'
-        NINE_REALMS = 'https://rpc.ninerealms.info'
+        NINE_REALMS = 'https://rpc.ninerealms.com'
         THORSWAP = 'https://rpc.thorswap.net'
 
         STAGENET = 'https://stagenet-rpc.ninerealms.com'
@@ -90,9 +90,9 @@ MULTICHAIN_STAGENET_ENVIRONMENT = ThorEnvironment(
 
 MAINNET_ENVIRONMENT = ThorEnvironment(
     seed_url=ThorURL.Seed.MAINNET,
-    midgard_url=ThorURL.Midgard.PUBLIC,
-    thornode_url=ThorURL.THORNode.PUBLIC,
-    rpc_url=ThorURL.RPC.PUBLIC,
+    midgard_url=ThorURL.Midgard.NINE_REALMS,
+    thornode_url=ThorURL.THORNode.NINE_REALMS,
+    rpc_url=ThorURL.RPC.NINE_REALMS,
     kind='mainnet',
 )
 
