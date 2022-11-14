@@ -81,7 +81,7 @@ class ThorConnector:
 
     async def query_tendermint_block_raw(self, height):
         path = self.env.path_block_by_height.format(height=height)
-        data = await self.pub_client.request(path)
+        data = await self.pub_client.request(path, is_rpc=True)
         return data
 
     async def query_block(self, height) -> ThorBalances:
@@ -101,8 +101,7 @@ class ThorConnector:
     async def query_native_tx_search(self,
                                      query: str,
                                      page: int = 1, per_page: int = 50, order_by='"asc"',
-                                     prove=True,
-                                     clients=None):
+                                     prove=True):
         if not query.startswith('"'):
             query = f'"{query}"'
         if not order_by.startswith('"'):
