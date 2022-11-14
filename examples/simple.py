@@ -38,7 +38,7 @@ async def main():
         delim()
 
         mimir = await connector.query_mimir()
-        mimir_1 = mimir.get('mimir//MINIMUMBONDINRUNE')
+        mimir_1 = mimir.get('MINIMUMBONDINRUNE')
         print(f'Mimir: {mimir}, MINIMUMBONDINRUNE = {mimir_1}')
         delim()
 
@@ -46,7 +46,7 @@ async def main():
         print(f'Queue: {queue}')
         delim()
 
-        node_accounts = await connector.query_node_accounts(consensus=False)
+        node_accounts = await connector.query_node_accounts()
         print(f'Example node account: {random.sample(node_accounts, 1)[0]}')
         delim()
 
@@ -68,8 +68,7 @@ async def main():
         delim()
 
         tx = await connector.query_native_tx(
-            '3A65AED750FE0461C87760FCA1614DCF3410778A92B8F5878E38FD4CFEB81860',
-            before_hard_fork=True
+            '27F50064DCA349E999DE3183667E31819C21EDD33D352E012D4440A0E29D4AC0',
         )
         print(f'Tx = {tx}')
         delim()
