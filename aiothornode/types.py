@@ -439,9 +439,11 @@ class ThorTxAttribute(NamedTuple):
 
     @classmethod
     def from_json(cls, j):
+        k = j.get('key')
+        v = j.get('value')
         return cls(
-            base64.b64decode(j['key']).decode('utf-8'),
-            base64.b64decode(j['value']).decode('utf-8'),
+            base64.b64decode(k).decode('utf-8') if k else None,
+            base64.b64decode(v).decode('utf-8') if v else None,
             bool(j['index'])
         )
 
