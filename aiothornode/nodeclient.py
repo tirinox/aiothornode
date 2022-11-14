@@ -32,6 +32,8 @@ class ThorNodeClient:
         try:
             self.logger.debug(f'Node GET "{url}"')
             async with self.session.get(url, timeout=self.timeout) as resp:
+                if resp.status == 404:
+                    raise FileNotFoundError(f'{url} not found, sorry!')
                 text = await resp.text()
                 self.logger.debug(f'Node RESPONSE "{url}" code={resp.status}')
                 return ujson.loads(text)
@@ -54,3 +56,7 @@ class ThorNodePublicClient(ThorNodeClient):
             return f'{self.env.rpc_url}{path}'
         else:
             return f'{self.env.thornode_url}{path}'
+
+    def __repr__(self) -> str:
+        return f"ThorNodePublicClient({self.env.thornode_url})"
+
