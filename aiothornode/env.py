@@ -33,6 +33,12 @@ class ThorEnvironment:
     path_genesis: str = '/genesis'
     path_status: str = '/status?'
 
+    path_liq_provider_details = '/thorchain/pool/{asset}/liquidity_provider/{address}?height={height}'
+    path_liq_providers = '/thorchain/pool/{asset}/liquidity_providers?height={height}'
+
+    path_saver_details = '/thorchain/pool/{asset}/saver/{address}?height={height}'
+    path_savers = '/thorchain/pool/{asset}/savers?height={height}'
+
     kind: str = ''
 
     def copy(self):

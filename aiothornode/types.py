@@ -521,14 +521,31 @@ class ThorNativeTX(NamedTuple):
         )
 
 
-class ThorNativeTXSearchResults(NamedTuple):
-    total_count: int
-    txs: List[ThorNativeTX]
+class ThorLiquidityProvider(NamedTuple):
+    asset: str
+    asset_address: str
+    rune_address: str
+    last_add_height: int
+    last_withdraw_height: int
+    units: int
+    pending_rune: int
+    pending_asset: int
+    pending_tx_id: str
+    rune_deposit_value: int
+    asset_deposit_value: int
 
     @classmethod
     def from_json(cls, j):
-        result = j.get('result', {})
         return cls(
-            total_count=int(result.get('total_count', 0)),
-            txs=[ThorNativeTX.from_json(tx) for tx in result.get('txs', [])]
+            asset=j.get('asset'),
+            asset_address=j.get('asset_address'),
+            rune_address=j.get('rune_address'),
+            last_add_height=int(j.get('last_add_height', 0)),
+            last_withdraw_height=int(j.get('last_withdraw_height', 0)),
+            units=int(j.get('units', 0)),
+            pending_rune=int(j.get('pending_rune', 0)),
+            pending_asset=int(j.get('pending_asset', 0)),
+            rune_deposit_value=int(j.get('rune_deposit_value', 0)),
+            asset_deposit_value=int(j.get('asset_deposit_value', 0)),
+            pending_tx_id=j.get('pending_tx_Id'),
         )

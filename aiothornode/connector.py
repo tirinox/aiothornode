@@ -98,26 +98,6 @@ class ThorConnector:
         data = await self.pub_client.request(path, is_rpc=True)
         return ThorNativeTX.from_json(data)
 
-    async def query_native_tx_search(self,
-                                     query: str,
-                                     page: int = 1, per_page: int = 50, order_by='"asc"',
-                                     prove=True):
-        if not query.startswith('"'):
-            query = f'"{query}"'
-        if not order_by.startswith('"'):
-            order_by = f'"{order_by}"'
-        query = urllib.parse.quote_plus(query)
-        order_by = urllib.parse.quote_plus(order_by)
-        path = self.env.path_tx_search.format(
-            query=query,
-            prove='true' if prove else 'false',
-            page=page,
-            per_page=per_page,
-            order_by=order_by
-        )
-        data = await self.pub_client.request(path, is_rpc=True)
-        return ThorNativeTXSearchResults.from_json(data)
-
     async def query_genesis(self):
         data = await self.pub_client.request(self.env.path_genesis, is_rpc=True)
         return data['result']['genesis'] if data else None
@@ -125,3 +105,27 @@ class ThorConnector:
     async def query_native_status(self):
         data = await self.pub_client.request(self.env.path_status, is_rpc=True)
         return data['result']
+
+    async def query_liquidity_providers(self, asset, height=0):
+        url = self.env.path_liq_providers.format(asset=asset, height=height)
+        data = await self.pub_client.request(url)
+        if data:
+            return [ThorLiquidityProvider.from_json(p) for p in data]
+
+    async def query_liquidity_provider(self, asset, address, height=0):
+        url = self.env.path_liq_provider_details.format(asset=asset, height=height, address=address)
+        data = await self.pub_client.request(url)
+        if data:
+            return ThorLiquidityProvider.from_json(data)
+
+    async def query_savers(self, asset, height=0):
+        url = self.env.path_savers.format(asset=asset, height=height)
+        data = await self.pub_client.request(url)
+        if data:
+            return [ThorLiquidityProvider.from_json(p) for p in data]
+
+    async def query_saver_details(self, asset, address, height=0):
+        url = self.env.path_saver_details.format(asset=asset, height=height, address=address)
+        data = await self.pub_client.request(url)
+        if data:
+            return ThorLiquidityProvider.from_json(data)

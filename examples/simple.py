@@ -27,6 +27,30 @@ async def main():
         print('Chain info:', chains)
         delim()
 
+        liq_providers = await connector.query_liquidity_providers('BTC.BTC')
+        print(f'LProviders: {len(liq_providers)}')
+
+        def test_providers(providers, is_savers):
+            assert len(providers) > 0
+            if is_savers:
+                assert all(p.rune_deposit_value == 0 for p in providers)
+            else:
+                assert any(p.pending_tx_id for p in providers)
+            assert all(p.rune_address or p.asset_address for p in providers)
+            assert any(p.asset_deposit_value > 0 or p.rune_deposit_value > 0 for p in providers)
+            assert all(p.last_add_height > 0 for p in providers)
+            assert all(
+                p.units > 0 or ((p.pending_rune > 0 or p.pending_asset > 0) and p.pending_tx_id) for p in providers)
+            assert any(p.last_withdraw_height > 0 for p in providers)
+
+        test_providers(liq_providers, False)
+
+        savers = await connector.query_savers('BTC.BTC')
+        print(f'Savers: {len(savers)}')
+        test_providers(savers, True)
+
+        delim()
+
         print('Tendermint Block:')
         tender_block = await connector.query_tendermint_block_raw(8218339)
         block_header = tender_block['result']['block']['header']
@@ -61,16 +85,6 @@ async def main():
 
         bank = await connector.query_balance('thor1lj62pg6ryxv2htekqx04nv7wd3g98qf9gfvamy')
         print(f'Balance of {bank.address} is {bank.runes_float} Rune')
-        delim()
-
-        txs = await connector.query_native_tx_search("tx.height=8218339", page=1, per_page=2)
-        print(f'Txs search: {txs}')
-        delim()
-
-        tx = await connector.query_native_tx(
-            '27F50064DCA349E999DE3183667E31819C21EDD33D352E012D4440A0E29D4AC0',
-        )
-        print(f'Tx = {tx}')
         delim()
 
         status = await connector.query_native_status()

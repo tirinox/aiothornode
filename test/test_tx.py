@@ -2,13 +2,6 @@ from .fixtures import *
 
 
 @pytest.mark.asyncio
-async def test_mccn_search_txs(mainnet_connector: ThorConnector):
-    results = await mainnet_connector.query_native_tx_search("tx.height=8222230", page=1, per_page=2)
-    assert results.total_count == 164
-    assert len(results.txs) == 2
-
-
-@pytest.mark.asyncio
 async def test_mccn_block_txs_1(mainnet_connector: ThorConnector):
     tx_hash = '6F1BA2A0BB64552C14BB92FE3AE5E2DE650EEFA191EE03CF9A3CBF58CCDC9332'
     tx = await mainnet_connector.query_native_tx(tx_hash)
