@@ -1,6 +1,11 @@
-.PHONY = compile upload
+.PHONY = compile upload clean help
+
+.DEFAULT_GOAL: help
 
 PYPI_USER=tirinox
+
+help:
+	@echo "make compile|upload|clean"
 
 compile:
 	@echo "Compile and check!"
