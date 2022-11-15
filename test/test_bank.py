@@ -2,9 +2,9 @@ from .fixtures import *
 
 
 @pytest.mark.asyncio
-async def test_mccn_balance(chaosnet_connector: ThorConnector):
+async def test_mccn_balance(mainnet_connector: ThorConnector):
     address = 'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt'
-    balance = await chaosnet_connector.query_balance(address, consensus=False)
+    balance = await mainnet_connector.query_balance(address, consensus=False)
     # assert balance.height > 0  # no longer available
     assert balance.assets
     assert balance.runes == 341656201145

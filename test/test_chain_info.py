@@ -29,12 +29,7 @@ def assert_chains_ok(chain_dic: Dict[str, ThorChainInfo], multi):
 
 
 @pytest.mark.asyncio
-async def test_mccn_chains(chaosnet_connector: ThorConnector):
-    chain_dic = await chaosnet_connector.query_chain_info()
+async def test_mccn_chains(mainnet_connector: ThorConnector):
+    chain_dic = await mainnet_connector.query_chain_info()
     assert_chains_ok(chain_dic, multi=True)
 
-
-@pytest.mark.asyncio
-async def test_sccn_chains(sc_chaosnet_connector: ThorConnector):
-    chain_dic = await sc_chaosnet_connector.query_chain_info()
-    assert_chains_ok(chain_dic, multi=False)
