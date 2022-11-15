@@ -1,3 +1,5 @@
+import asyncio
+
 import aiohttp
 
 from aiothornode.connector import *

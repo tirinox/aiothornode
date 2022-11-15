@@ -121,3 +121,7 @@ class ThorConnector:
     async def query_genesis(self):
         data = await self.pub_client.request(self.env.path_genesis, is_rpc=True)
         return data['result']['genesis'] if data else None
+
+    async def query_native_status(self):
+        data = await self.pub_client.request(self.env.path_status, is_rpc=True)
+        return data['result']

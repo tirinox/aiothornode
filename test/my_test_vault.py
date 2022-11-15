@@ -1,11 +1,13 @@
+import asyncio
+
 import aiohttp
 
 from aiothornode.connector import *
-from aiothornode.env import MCCN
+from aiothornode.env import MAINNET
 
 
 async def main():
-    env = MCCN.copy()
+    env = MAINNET.copy()
 
     async with aiohttp.ClientSession() as session:
         connector = ThorConnector(env, session)

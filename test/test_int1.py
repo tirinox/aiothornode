@@ -1,7 +1,6 @@
-import pytest
-
 from aiothornode.types import ThorPool
 from .fixtures import *
+
 
 
 async def internal_constants_test(c: ThorConnector):
@@ -14,13 +13,13 @@ async def internal_constants_test(c: ThorConnector):
 
 
 @pytest.mark.asyncio
-async def test_constants(testnet_connector: ThorConnector):
-    await internal_constants_test(testnet_connector)
+async def test_constants(mainnet_connector: ThorConnector):
+    await internal_constants_test(mainnet_connector)
 
 
 @pytest.mark.asyncio
-async def test_constants_chaos(chaosnet_connector: ThorConnector):
-    await internal_constants_test(chaosnet_connector)
+async def test_constants_chaos(mainnet_connector: ThorConnector):
+    await internal_constants_test(mainnet_connector)
 
 
 async def internal_queue_test(c: ThorConnector):
@@ -30,18 +29,18 @@ async def internal_queue_test(c: ThorConnector):
 
 
 @pytest.mark.asyncio
-async def test_update_nodes(testnet_connector: ThorConnector):
-    print(testnet_connector._clients)
+async def test_update_nodes(mainnet_connector: ThorConnector):
+    print(mainnet_connector._clients)
 
 
 @pytest.mark.asyncio
-async def test_queue_test(testnet_connector: ThorConnector):
-    await internal_queue_test(testnet_connector)
+async def test_queue_test(mainnet_connector: ThorConnector):
+    await internal_queue_test(mainnet_connector)
 
 
 @pytest.mark.asyncio
-async def test_queue_chaos(chaosnet_connector: ThorConnector):
-    await internal_queue_test(chaosnet_connector)
+async def test_queue_chaos(mainnet_connector: ThorConnector):
+    await internal_queue_test(mainnet_connector)
 
 
 def pool_validate(pool: ThorPool):
@@ -49,9 +48,9 @@ def pool_validate(pool: ThorPool):
     assert pool.asset
     assert pool.runes_per_asset > 0
     assert pool.assets_per_rune > 0
-    assert pool.pool_units_int > 0
-    assert pool.balance_asset_int > 0
-    assert pool.balance_rune_int > 0
+    assert pool.pool_units > 0
+    assert pool.balance_asset > 0
+    assert pool.balance_rune > 0
     assert pool.status in (pool.STATUS_AVAILABLE, pool.STATUS_BOOTSTRAP, pool.STATUS_ENABLED)
 
 
@@ -71,19 +70,19 @@ async def internal_pool_test(c: ThorConnector, pool, height=None):
 
 
 @pytest.mark.asyncio
-async def test_pools_test(testnet_connector: ThorConnector):
-    await internal_pools_test(testnet_connector)
-    await internal_pools_test(testnet_connector, height=36001)
-    await internal_pool_test(testnet_connector, 'BTC.BTC')
-    await internal_pool_test(testnet_connector, 'BTC.BTC', 36002)
+async def test_pools_test(mainnet_connector: ThorConnector):
+    await internal_pools_test(mainnet_connector)
+    await internal_pools_test(mainnet_connector, height=36001)
+    await internal_pool_test(mainnet_connector, 'BTC.BTC')
+    await internal_pool_test(mainnet_connector, 'BTC.BTC', 36002)
 
 
 @pytest.mark.asyncio
-async def test_pools_chaos(chaosnet_connector: ThorConnector):
-    await internal_pools_test(chaosnet_connector)
-    await internal_pools_test(chaosnet_connector, height=1000001)
-    await internal_pool_test(chaosnet_connector, 'BNB.BNB')
-    await internal_pool_test(chaosnet_connector, 'BNB.BNB', height=100001)
+async def test_pools_chaos(mainnet_connector: ThorConnector):
+    await internal_pools_test(mainnet_connector)
+    await internal_pools_test(mainnet_connector, height=1000001)
+    await internal_pool_test(mainnet_connector, 'BNB.BNB')
+    await internal_pool_test(mainnet_connector, 'BNB.BNB', height=100001)
 
 
 async def internal_last_blocks_test(c: ThorConnector):
@@ -92,10 +91,10 @@ async def internal_last_blocks_test(c: ThorConnector):
 
 
 @pytest.mark.asyncio
-async def test_last_block_test(testnet_connector: ThorConnector):
-    await internal_last_blocks_test(testnet_connector)
+async def test_last_block_test(mainnet_connector: ThorConnector):
+    await internal_last_blocks_test(mainnet_connector)
 
 
 @pytest.mark.asyncio
-async def test_last_block_chaos(chaosnet_connector: ThorConnector):
-    await internal_last_blocks_test(chaosnet_connector)
+async def test_last_block_chaos(mainnet_connector: ThorConnector):
+    await internal_last_blocks_test(mainnet_connector)

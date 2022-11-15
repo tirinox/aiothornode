@@ -1,26 +1,19 @@
 import aiohttp
 import pytest
+import pytest_asyncio
 
 from aiothornode.connector import ThorConnector
-from aiothornode.env import MCCN, MCTN
+from aiothornode.env import MAINNET
 
 
-@pytest.fixture()
+@pytest_asyncio.fixture
 async def session():
     session = aiohttp.ClientSession()
     yield session
     await session.close()
 
 
-@pytest.fixture()
-async def testnet_connector(session):
-    con = ThorConnector(MCTN, session)
-    await con.update_nodes()
-    return con
-
-
-@pytest.fixture()
-async def chaosnet_connector(session):
-    con = ThorConnector(MCCN, session)
-    await con.update_nodes()
+@pytest_asyncio.fixture
+async def mainnet_connector(session):
+    con = ThorConnector(MAINNET, session)
     return con

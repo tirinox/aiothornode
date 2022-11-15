@@ -73,6 +73,9 @@ async def main():
         print(f'Tx = {tx}')
         delim()
 
+        status = await connector.query_native_status()
+        print(f'Status: {status}')
+
 
 if __name__ == '__main__':
     asyncio.run(main())

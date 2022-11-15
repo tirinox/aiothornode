@@ -31,6 +31,7 @@ class ThorEnvironment:
     path_tx_search: str = '/tx_search?query={query}&prove={prove}&page={page}&per_page={per_page}&order_by={order_by}'
 
     path_genesis: str = '/genesis'
+    path_status: str = '/status?'
 
     kind: str = ''
 
