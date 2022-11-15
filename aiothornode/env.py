@@ -39,6 +39,8 @@ class ThorEnvironment:
     path_saver_details = '/thorchain/pool/{asset}/saver/{address}?height={height}'
     path_savers = '/thorchain/pool/{asset}/savers?height={height}'
 
+    path_block_results = '/block_results?height={height}'
+
     kind: str = ''
 
     def copy(self):

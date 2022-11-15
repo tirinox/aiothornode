@@ -87,8 +87,13 @@ async def main():
         print(f'Balance of {bank.address} is {bank.runes_float} Rune')
         delim()
 
-        status = await connector.query_native_status()
+        status = await connector.query_native_status_raw()
         print(f'Status: {status}')
+        delim()
+
+        block_results = await connector.query_native_block_results_raw(8240015)
+        print(f'Block: {block_results}')
+
 
 
 if __name__ == '__main__':

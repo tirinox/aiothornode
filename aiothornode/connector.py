@@ -1,5 +1,4 @@
 import logging
-import urllib.parse
 from typing import Dict
 
 from aiohttp import ClientSession
@@ -102,9 +101,12 @@ class ThorConnector:
         data = await self.pub_client.request(self.env.path_genesis, is_rpc=True)
         return data['result']['genesis'] if data else None
 
-    async def query_native_status(self):
-        data = await self.pub_client.request(self.env.path_status, is_rpc=True)
-        return data['result']
+    async def query_native_status_raw(self):
+        return await self.pub_client.request(self.env.path_status, is_rpc=True)
+
+    async def query_native_block_results_raw(self, height):
+        url = self.env.path_block_results.format(height=height)
+        return await self.pub_client.request(url, is_rpc=True)
 
     async def query_liquidity_providers(self, asset, height=0):
         url = self.env.path_liq_providers.format(asset=asset, height=height)
