@@ -9,12 +9,13 @@ from .types import *
 
 
 class ThorConnector:
-    def __init__(self, env: ThorEnvironment, session: ClientSession, logger=None):
+    def __init__(self, env: ThorEnvironment, session: ClientSession, logger=None, extra_headers=None):
         self.session = session
         self.env = env
         self.logger = logger or logging.getLogger(self.__class__.__name__)
         self._clients = []
-        self.pub_client = ThorNodePublicClient(self.session, logger=self.logger, env=self.env)
+        self.pub_client = ThorNodePublicClient(self.session, logger=self.logger, env=self.env,
+                                               extra_headers=extra_headers)
 
     # --- METHODS ----
 

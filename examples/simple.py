@@ -17,6 +17,7 @@ async def main():
 
     async with aiohttp.ClientSession() as session:
         connector = ThorConnector(env, session)
+        connector.pub_client.set_client_id_header('footest')
 
         # genesis = await connector.query_genesis()
         # print(f'Chain ID = {genesis["chain_id"]}')
@@ -93,7 +94,6 @@ async def main():
 
         block_results = await connector.query_native_block_results_raw(8240015)
         print(f'Block: {block_results}')
-
 
 
 if __name__ == '__main__':
