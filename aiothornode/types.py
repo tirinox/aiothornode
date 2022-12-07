@@ -68,7 +68,7 @@ class ThorNodeAccount(NamedTuple):
     status: str = ''
     pub_key_set: dict = None
     validator_cons_pub_key: str = ''
-    bond: int = ''
+    bond: int = 0
     active_block_height: int = 0
     bond_address: str = ''
     status_since: int = ''
@@ -87,14 +87,17 @@ class ThorNodeAccount(NamedTuple):
 
     @classmethod
     def from_json(cls, j):
+        bond = int(j.get('total_bond', 0)) or int(j.get('bond', 0))
+        node_operator_address = str(j.get('node_operator_address', '')) or str(j.get('bond_address', ''))
+
         return cls(
             node_address=str(j.get('node_address', '')),
             status=str(j.get('status', '')),
             pub_key_set=j.get('pub_key_set'),
             validator_cons_pub_key=str(j.get('validator_cons_pub_key', '')),
-            bond=int(j.get('bond', 0)),
+            bond=bond,
             active_block_height=int(j.get('active_block_height', 0)),
-            bond_address=str(j.get('bond_address', '')),
+            bond_address=node_operator_address,
             status_since=int(j.get('status_since', 0)),
             signer_membership=j.get('signer_membership', []),
             requested_to_leave=bool(j.get('requested_to_leave', False)),
