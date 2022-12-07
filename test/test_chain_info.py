@@ -1,5 +1,7 @@
 from typing import Dict
 
+import pytest
+
 from aiothornode.types import ThorChainInfo
 from .fixtures import *
 
