@@ -21,6 +21,8 @@ class ThorEnvironment:
     path_last_blocks: str = "/thorchain/lastblock"
     path_constants: str = "/thorchain/constants"
     path_mimir: str = "/thorchain/mimir"
+    path_mimir_nodes: str = '/thorchain/mimir/nodes'
+    path_mimir_votes: str = '/thorchain/mimir/nodes_all'
     path_inbound_addresses: str = "/thorchain/inbound_addresses"
     path_vault_yggdrasil: str = "/thorchain/vaults/yggdrasil"
     path_vault_asgard: str = "/thorchain/vaults/asgard"

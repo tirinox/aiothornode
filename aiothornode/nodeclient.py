@@ -1,8 +1,7 @@
-import asyncio
 import logging
 
 import ujson
-from aiohttp import ClientSession, ClientConnectorError
+from aiohttp import ClientSession
 
 from aiothornode.env import ThorEnvironment
 
@@ -33,17 +32,13 @@ class ThorNodeClient:
 
     async def request(self, path, is_rpc=False):
         url = self.connection_url(self.node_ip, path, is_rpc)
-        try:
-            self.logger.debug(f'Node GET "{url}"')
-            async with self.session.get(url, timeout=self.timeout, headers=self.extra_headers) as resp:
-                if resp.status == 404:
-                    raise FileNotFoundError(f'{url} not found, sorry!')
-                text = await resp.text()
-                self.logger.debug(f'Node RESPONSE "{url}" code={resp.status}')
-                return ujson.loads(text)
-        except (ClientConnectorError, asyncio.TimeoutError, ValueError) as e:
-            self.logger.warning(f'Cannot connect to THORNode ({self.node_ip}) for "{path}" (err: {e}).')
-            return None
+        self.logger.debug(f'Node GET "{url}"')
+        async with self.session.get(url, timeout=self.timeout, headers=self.extra_headers) as resp:
+            self.logger.debug(f'Node RESPONSE "{url}" code={resp.status}')
+            if resp.status == 404:
+                raise FileNotFoundError(f'{url} not found, sorry!')
+            text = await resp.text()
+            return ujson.loads(text)
 
     def set_client_id_header(self, client_id: str):
         if not isinstance(self.extra_headers, dict):
@@ -58,6 +53,7 @@ class ThorNodeClient:
         return f'ThorNodeClient({self.node_ip!r})'
 
 
+# todo: join ^ and v
 class ThorNodePublicClient(ThorNodeClient):
     def __init__(self, session: ClientSession, env: ThorEnvironment, logger=None, extra_headers=None):
         port = TENDERMINT_RPC_PORT_TESTNET if env.kind == 'testnet' else TENDERMINT_RPC_PORT_MAINNET

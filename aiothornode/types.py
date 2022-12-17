@@ -552,3 +552,21 @@ class ThorLiquidityProvider(NamedTuple):
             asset_deposit_value=int(j.get('asset_deposit_value', 0)),
             pending_tx_id=j.get('pending_tx_Id'),
         )
+
+
+class ThorMimirVote(NamedTuple):
+    key: str
+    value: int
+    singer: str
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(
+            key=j.get('key', ''),
+            value=int(j.get('value', 0)),
+            singer=j.get('signer', '')
+        )
+
+    @classmethod
+    def from_json_array(cls, j):
+        return [cls.from_json(item) for item in j] if j else []
