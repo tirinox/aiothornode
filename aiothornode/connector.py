@@ -1,10 +1,11 @@
+import asyncio
 import logging
 from typing import Dict
 
 from aiohttp import ClientSession, ClientError, ServerDisconnectedError
 
 from .env import ThorEnvironment
-from .nodeclient import ThorNodePublicClient
+from .nodeclient import ThorNodeClient
 from .types import *
 
 
@@ -148,12 +149,17 @@ class ThorConnector:
         self._clients = [
             self._make_client(env, extra_headers)
         ]
-        for env in (additional_envs or []):
-            self._clients.append(self._make_client(env, extra_headers))
+
+        if additional_envs:
+            if not isinstance(additional_envs, (list, tuple)):
+                additional_envs = [additional_envs]
+
+            for env in additional_envs:
+                self._clients.append(self._make_client(env, extra_headers))
 
     def _make_client(self, env: ThorEnvironment, extra_headers):
-        return ThorNodePublicClient(self.session, logger=self.logger, env=env,
-                                    extra_headers=extra_headers)
+        return ThorNodeClient(self.session, logger=self.logger, env=env,
+                              extra_headers=extra_headers)
 
     def set_client_id_for_all(self, client_id):
         for client in self._clients:
@@ -161,16 +167,21 @@ class ThorConnector:
 
     async def _request(self, path, is_rpc=False):
         for client in self._clients:
-            try:
-                data = await client.request(path, is_rpc=is_rpc)
-                if data is None:
-                    continue
-                return data
-            except (
-                    FileNotFoundError, AttributeError, ConnectionError, TimeoutError, ClientError,
-                    ServerDisconnectedError) as e:
-                if not self.silent:
-                    raise
-                else:
-                    self.logger.warning(f'Failed to query THORNode ({client.node_ip}) for "{path}" (err: {e!s}).')
-                    continue
+            for attempt in range(1, client.env.retries + 1):
+                if attempt > 1:
+                    self.logger.debug(f'Retry #{attempt} for path "{path}"')
+                try:
+                    data = await client.request(path, is_rpc=is_rpc)
+                    if data is not None:
+                        return data
+                except (FileNotFoundError, AttributeError,
+                        ConnectionError, asyncio.TimeoutError,
+                        ClientError, ServerDisconnectedError) as e:
+                    if not self.silent:
+                        raise
+                    else:
+                        err_type = type(e).__name__
+                        self.logger.warning(f'#{attempt}. Failed to query {client} for "{path}" (err: {err_type}).')
+                if d := client.env.retry_delay:
+                    self.logger.debug(f'#{attempt}. Delay before retry: {d} sec...')
+                    await asyncio.sleep(d)

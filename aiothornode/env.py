@@ -11,6 +11,9 @@ class ThorEnvironment:
 
     timeout: float = 6.0
 
+    retries: int = 1
+    retry_delay: float = 0.0
+
     path_queue: str = '/thorchain/queue'
     path_nodes: str = '/thorchain/nodes'
     path_pools: str = "/thorchain/pools"
@@ -51,6 +54,12 @@ class ThorEnvironment:
     def set_timeout(self, timeout):
         assert timeout > 0.0
         self.timeout = timeout
+        return self
+
+    def set_retries(self, retries=1, delay=0.0):
+        assert retries >= 1
+        self.retries = retries
+        self.retry_delay = delay
         return self
 
 
@@ -122,9 +131,13 @@ MULTICHAIN_MAINNET_THORSWAP_ENVIRONMENT = ThorEnvironment(
     rpc_url=ThorURL.RPC.THORSWAP,
     kind='mainnet',
 )
- 
+
 MAINNET = MAINNET_ENVIRONMENT  # alias
 STAGENET = MULTICHAIN_STAGENET_ENVIRONMENT  # alias
 MCTN = TEST_NET_ENVIRONMENT_MULTI_1  # alias
 MCCN_9R = MULTICHAIN_MAINNET_9R_ENVIRONMENT  # alias
 MCCN_THORSWAP = MULTICHAIN_MAINNET_THORSWAP_ENVIRONMENT  # alias
+
+THORNODE_PORT = 1317
+TENDERMINT_RPC_PORT_TESTNET = 26657
+TENDERMINT_RPC_PORT_MAINNET = 27147

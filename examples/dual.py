@@ -1,3 +1,4 @@
+import logging
 import random
 
 from aiothornode.connector import ThorConnector
@@ -11,17 +12,25 @@ def delim():
 
 
 async def main():
-    env = MAINNET_ENVIRONMENT.copy()
-    # env = TEST_NET_ENVIRONMENT_MULTI_1.copy()  # TestNet
-    # env = ThorEnvironment(seed_url='https://my-thor-seed.org')  # custom
+    logging.basicConfig(
+        level=logging.getLevelName(logging.DEBUG),
+        format='%(asctime)s %(levelname)s:%(name)s:%(funcName)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
 
     async with aiohttp.ClientSession() as session:
-        connector = ThorConnector(env, session)
-        connector.set_client_id_for_all('footest')
+        primary_env = MAINNET_ENVIRONMENT.copy()
+        primary_env.timeout = 0.05  # probably too low, but we want to see the timeout
+        primary_env.retries = 2
+        primary_env.retry_delay = 0.7
 
-        # genesis = await connector.query_genesis()
-        # print(f'Chain ID = {genesis["chain_id"]}')
-        # delim()
+        backup_env = MAINNET_ENVIRONMENT.copy()
+        backup_env.timeout = 5
+        backup_env.thornode_url = 'https://thornode-archive.ninerealms.com'
+
+        connector = ThorConnector(primary_env, session,
+                                  additional_envs=backup_env)  # two envs: primary and backup
+        connector.set_client_id_for_all('footest')
 
         votes = await connector.query_mimir_votes()
         print(f'Votes: {len(votes)}, example: {votes[0]}')
@@ -53,9 +62,10 @@ async def main():
 
         test_providers(liq_providers, False)
 
-        savers = await connector.query_savers('BTC.BTC')
-        print(f'Savers: {len(savers)}')
-        test_providers(savers, True)
+        # archive does not support savers
+        # savers = await connector.query_savers('BTC.BTC')
+        # print(f'Savers: {len(savers)}')
+        # test_providers(savers, True)
 
         delim()
 
