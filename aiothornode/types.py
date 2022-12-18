@@ -550,7 +550,7 @@ class ThorLiquidityProvider(NamedTuple):
             pending_asset=int(j.get('pending_asset', 0)),
             rune_deposit_value=int(j.get('rune_deposit_value', 0)),
             asset_deposit_value=int(j.get('asset_deposit_value', 0)),
-            pending_tx_id=j.get('pending_tx_Id'),
+            pending_tx_id=j.get('pending_tx_id') or j.get('pending_tx_Id'),  # id vs Id (both possible)
         )
 
 
