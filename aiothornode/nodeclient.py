@@ -24,6 +24,8 @@ class ThorNodeClient:
             self.logger.debug(f'Node RESPONSE "{url}" code={resp.status}')
             if resp.status == 404:
                 raise FileNotFoundError(f'{url} not found, sorry!')
+            elif resp.status == 501:
+                raise NotImplementedError(f'{url} not implemented, sorry!')
             text = await resp.text()
             return ujson.loads(text)
 

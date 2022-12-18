@@ -16,8 +16,8 @@ class ThorConnector:
         data = await self._request(path)
         return data
 
-    async def query_node_accounts_raw(self):
-        return await self._request(self.env.path_nodes)
+    async def query_raw(self, path, is_rpc=False):
+        return await self._request(path, is_rpc)
 
     async def query_node_accounts(self) -> List[ThorNodeAccount]:
         data = await self._request(self.env.path_nodes)
@@ -174,6 +174,9 @@ class ThorConnector:
                     data = await client.request(path, is_rpc=is_rpc)
                     if data is not None:
                         return data
+                except NotImplementedError:
+                    # Do no retries, no backups. Something is wrong with your code
+                    raise
                 except (FileNotFoundError, AttributeError,
                         ConnectionError, asyncio.TimeoutError,
                         ClientError, ServerDisconnectedError) as e:

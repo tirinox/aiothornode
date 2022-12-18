@@ -1,10 +1,11 @@
+import asyncio
 import logging
 import random
 
+import aiohttp
+
 from aiothornode.connector import ThorConnector
 from aiothornode.env import MAINNET_ENVIRONMENT
-import asyncio
-import aiohttp
 
 
 def delim():
@@ -36,6 +37,11 @@ async def main():
         print(f'Votes: {len(votes)}, example: {votes[0]}')
         assert all(v.key and v.value is not None and v.singer for v in votes)
         delim()
+
+        # to test NotImplemetedError, we can use a non-existent path
+        # foo = await connector.query_raw('/thorchain/foofoofoo')
+        # print(f'foo: {foo}')
+        # delim()
 
         node_mimir = await connector.query_mimir_node_accepted()
         print(f'Node mimir: {node_mimir}')
