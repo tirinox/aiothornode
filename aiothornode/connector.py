@@ -17,7 +17,7 @@ class ThorConnector:
         return data
 
     async def query_raw(self, path, is_rpc=False):
-        return await self._request(path, is_rpc)
+        return await self._request(path, is_rpc=is_rpc)
 
     async def query_node_accounts(self) -> List[ThorNodeAccount]:
         data = await self._request(self.env.path_nodes)
@@ -32,7 +32,7 @@ class ThorConnector:
             path = self.env.path_pools_height.format(height=height)
         else:
             path = self.env.path_pools
-        data = await self._request(path)
+        data = await self._request(path, treat_empty_as_ok=False)
         return [ThorPool.from_json(j) for j in data]
 
     async def query_pool(self, pool: str, height=None) -> ThorPool:
@@ -165,15 +165,24 @@ class ThorConnector:
         for client in self._clients:
             client.set_client_id_header(client_id)
 
-    async def _request(self, path, is_rpc=False):
+    async def _request(self, path, is_rpc=False, treat_empty_as_ok=True):
         for client in self._clients:
             for attempt in range(1, client.env.retries + 1):
                 if attempt > 1:
                     self.logger.debug(f'Retry #{attempt} for path "{path}"')
                 try:
                     data = await client.request(path, is_rpc=is_rpc)
-                    if data is not None:
-                        return data
+
+                    if treat_empty_as_ok:
+                        if data is not None:
+                            return data
+                    else:
+                        if data:
+                            # only non-empty data is considered as valid
+                            return data
+                        else:
+                            # if data is empty and treat_empty_as_ok==False, try next client
+                            break  # breaks the retry loop
                 except NotImplementedError:
                     # Do no retries, no backups. Something is wrong with your code
                     raise
