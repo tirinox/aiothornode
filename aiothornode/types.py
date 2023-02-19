@@ -570,3 +570,21 @@ class ThorMimirVote(NamedTuple):
     @classmethod
     def from_json_array(cls, j):
         return [cls.from_json(item) for item in j] if j else []
+
+
+class ThorPOL(NamedTuple):
+    current_deposit: int  # current amount of rune deposited
+    pnl: int  # total value of protocol's LP position in RUNE value
+    rune_deposited: int  # total amount of RUNE withdrawn from the pools
+    rune_withdrawn: int  # total amount of RUNE deposited into the pools
+    value: int  # total value of protocol's LP position in RUNE value
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(
+            current_deposit=int(j.get('current_deposit'), 0),
+            pnl=int(j.get('pnl', 0)),
+            rune_deposited=int(j.get('rune_deposited', 0)),
+            rune_withdrawn=int(j.get('rune_withdrawn', 0)),
+            value=int(j.get('value', 0)),
+        )

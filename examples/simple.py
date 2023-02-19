@@ -23,6 +23,10 @@ async def main():
         # print(f'Chain ID = {genesis["chain_id"]}')
         # delim()
 
+        pol = await connector.query_pol()
+        print(f'POL: {pol}')
+        delim()
+
         votes = await connector.query_mimir_votes()
         print(f'Votes: {len(votes)}, example: {votes[0]}')
         assert all(v.key and v.value is not None and v.singer for v in votes)
