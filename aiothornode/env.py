@@ -44,6 +44,7 @@ class ThorEnvironment:
     path_saver_details = '/thorchain/pool/{asset}/saver/{address}?height={height}'
     path_savers = '/thorchain/pool/{asset}/savers?height={height}'
     path_pol = '/thorchain/pol?height={height}'
+    path_network = '/thorchain/network?height={height}'
 
     path_block_results = '/block_results?height={height}'
 

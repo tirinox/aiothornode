@@ -1,9 +1,10 @@
+import asyncio
 import random
+
+import aiohttp
 
 from aiothornode.connector import ThorConnector
 from aiothornode.env import MAINNET_ENVIRONMENT
-import asyncio
-import aiohttp
 
 
 def delim():
@@ -25,6 +26,10 @@ async def main():
 
         pol = await connector.query_pol()
         print(f'POL: {pol}')
+        delim()
+
+        network = await connector.query_network()
+        print(f'Network: {network}')
         delim()
 
         votes = await connector.query_mimir_votes()

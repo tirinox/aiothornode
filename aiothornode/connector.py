@@ -144,6 +144,12 @@ class ThorConnector:
         if data:
             return ThorPOL.from_json(data)
 
+    async def query_network(self, height=0):
+        url = self.env.path_network.format(height=height)
+        data = await self._request(url)
+        if data:
+            return ThorNetwork.from_json(data)
+
     # ---- Internal ----
 
     def __init__(self, env: ThorEnvironment, session: ClientSession, logger=None, extra_headers=None,

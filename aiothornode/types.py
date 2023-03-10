@@ -588,3 +588,23 @@ class ThorPOL(NamedTuple):
             rune_withdrawn=int(j.get('rune_withdrawn', 0)),
             value=int(j.get('value', 0)),
         )
+
+
+class ThorNetwork(NamedTuple):
+    bond_reward_rune: int
+    burned_bep_2_rune: int
+    burned_erc_20_rune: int
+    total_bond_units: int
+    total_reserve: int
+    vaults_migrating: bool
+
+    @classmethod
+    def from_json(cls, j):
+        return cls(
+            bond_reward_rune=int(j.get('bond_reward_rune'), 0),
+            burned_bep_2_rune=int(j.get('burned_bep_2_rune', 0)),
+            burned_erc_20_rune=int(j.get('burned_erc_20_rune', 0)),
+            total_bond_units=int(j.get('total_bond_units', 0)),
+            total_reserve=int(j.get('total_reserve', 0)),
+            vaults_migrating=bool(j.get('vaults_migrating', False)),
+        )
